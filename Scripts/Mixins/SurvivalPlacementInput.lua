@@ -439,11 +439,11 @@ function SurvivalPlacementInput:SetupGhostObject(objName)
 	end
 	
 	self.m_ghostObject = Eternus.GameObjectSystem:NKCreateGameObject(objName, true)
-	self.m_ghostObject:NKGetInstance().m_ghostObject = true
 	self.m_ghostObject:NKPlaceInWorld(false, false)
 
 	local ghostPhysics = self.m_ghostObject:NKGetPhysics()
 	
+	self.m_ghostObject:NKGetInstance().m_ghostObject = true
 
 	if ghostPhysics then
 		ghostPhysics:NKDisable() --RemoveFromWorld
