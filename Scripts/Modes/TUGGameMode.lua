@@ -965,7 +965,7 @@ function TUGGameMode:ExecuteSlashCommand(userInput, args)
 	local commandEnd = string.find(userInput, ' ')
 	local finalString = userInput
 	if (commandEnd) then
-		finalString = string.sub(finalString, commandEnd)
+		finalString = string.sub(finalString, 1, commandEnd-1)
 	end
 	finalString = string.lower(finalString)
 	if self.m_slashCommands[finalString] == nil then
