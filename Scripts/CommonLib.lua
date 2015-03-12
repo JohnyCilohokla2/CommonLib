@@ -82,8 +82,8 @@ function CommonLib:Process(dt)
 			
 			local traceEquipable = traceInstance:NKGetEquipable()
 			
-			if (traceInstance:NKCanStack()) then
-				out = out .. ("\n" .. traceInstance:NKGetStackCount() .." / " .. traceInstance:NKGetMaxStackCount())
+			if (traceInstance.GetMaxStackCount and traceInstance:GetMaxStackCount() > 1) then
+				out = out .. ("\n" .. traceInstance:GetStackCount() .." / " .. traceInstance:GetMaxStackCount())
 			end
 			if (traceEquipable ~= nil) then
 				out = out .. ("\n{" .. traceEquipable:NKGetCurrentDurability() .." / " .. traceEquipable:NKGetMaxDurability() .. "}")

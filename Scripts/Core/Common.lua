@@ -24,6 +24,9 @@ if EternusEngine.Initilized == nil then
 	include( "Scripts/Buffs/BuffManager.lua")
 	EternusEngine.BuffManager = BuffManager.new({})
 	EternusEngine.Initilized = true
+	include( "Scripts/Projectiles/ProjectileManager.lua")
+	EternusEngine.ProjectileManager = ProjectileManager.new({})
+	EternusEngine.Statistics = include("Scripts/Core/NKStatistics.lua")
 end
 
 -------------------------------------------------------------------------------
@@ -77,17 +80,8 @@ EternusEngine.EHandleType =
 {
 	eHandleOne 		= 0,
 	eHandleTwo 		= 1,
-	eHandleTwoLeft 	= 2
-}
-
--- This must match the CharacterController::CharacterState found in CharacterController.h
-EternusEngine.ECharacterStatus =
-{
-	eOnGround 	= 0,
-	eJumping 	= 1,
-	eInAir 		= 2,
-	eClimbing 	= 3,
-	eFlying		= 4
+	eHandleTwoLeft 	= 2,
+	eHandleMisc		= 3
 }
 
 --Needs to match ESpecialType in HavokTypes.h

@@ -70,8 +70,8 @@ function SurvivalPlacementLogic:ServerEvent_Place( args )
 
 		local projectedPos = nil
 		
-		local projectedRaycastHit = self:GetProjectedItemRaycastHitOld(dropItem, args.origin, args.direction)
-		--local projectedRaycastHit = self:GetProjectedItemRaycastHit(dropItem, args.origin, args.direction)
+		--local projectedRaycastHit = self:GetProjectedItemRaycastHitOld(dropItem, args.origin, args.direction)
+		local projectedRaycastHit = self:GetProjectedItemRaycastHit(dropItem, args.origin, args.direction)
 
 		if projectedRaycastHit then
 			projectedPos = projectedRaycastHit.queryPosition
@@ -91,7 +91,12 @@ function SurvivalPlacementLogic:ServerEvent_Place( args )
 				placeWithPhysics = true
 			end
 		else
-			projectedPos = args.origin + (args.direction * vec3.new(self:GetMaxReachDistance(), self:GetMaxReachDistance(), self:GetMaxReachDistance()))
+			projectedPos = NKPhysics.RayCastCollect(args.origin, args.direction, self:GetMaxReachDistance(), {self.object})
+			if projectedPos then
+				projectedPos = projectedPos.contact
+			else
+				projectedPos = args.origin + (args.direction * vec3.new(self:GetMaxReachDistance(), self:GetMaxReachDistance(), self:GetMaxReachDistance()))
+			end
 		end
 
 		dropItem:NKSetPosition(projectedPos)
@@ -163,37 +168,39 @@ function SurvivalPlacementLogic:ServerEvent_PlaceAt( args )
 	local forceDisablePhysics = false
 	
 	if droppedObj and droppedObj.m_item then
-		local ignoreList = {}
-		if (droppedObj.m_item:NKGetInstance():InstanceOf(ConnectorInterface)) then
-			local gameobjects = Eternus.GameObjectSystem:NKGetGameObjectsInRadius(args.position, 10, "all", false);
-			for objectID, objectData in pairs(gameobjects) do
-				if (objectData:NKGetInstance():InstanceOf(ConnectorInterface)) then
-					if (droppedObj.m_item:NKGetInstance():canReconnect(args.orientation, args.position, objectData:NKGetInstance())) then
-						table.insert(ignoreList, objectData:NKGetInstance().object);
-						forceDisablePhysics = true
-						CL.println("Can reconnect!")
-						--CL.println(objectData:NKGetInstance())
-						--CL.println(objectData:NKGetInstance().object)
-					else
-						CL.println("Can't reconnect!")
+		if (not args.tKey or (not droppedObj.m_item:NKGetPlaceable() or droppedObj.m_item:NKGetPlaceable():NKIsPlacedWithPhysics()))then
+			local ignoreList = {}
+			if (droppedObj.m_item:NKGetInstance():InstanceOf(ConnectorInterface)) then
+				local gameobjects = Eternus.GameObjectSystem:NKGetGameObjectsInRadius(args.position, 10, "all", false);
+				for objectID, objectData in pairs(gameobjects) do
+					if (objectData:NKGetInstance():InstanceOf(ConnectorInterface)) then
+						if (droppedObj.m_item:NKGetInstance():canReconnect(args.orientation, args.position, objectData:NKGetInstance())) then
+							table.insert(ignoreList, objectData:NKGetInstance().object);
+							forceDisablePhysics = true
+							CL.println("Can reconnect!")
+							--CL.println(objectData:NKGetInstance())
+							--CL.println(objectData:NKGetInstance().object)
+						else
+							CL.println("Can't reconnect!")
+						end
 					end
 				end
 			end
-		end
-		if ((not next(ignoreList) == nil) or not args.tKey or (not droppedObj.m_item:NKGetPlaceable() or droppedObj.m_item:NKGetPlaceable():NKIsPlacedWithPhysics()))then
-			-- make sure it is rotated the right way
-			droppedObj.m_item:NKSetOrientation(args.orientation)
-			-- check to make sure it has space
-			local traceResult = NKPhysics.ObjectSweepCollect(droppedObj.m_item, args.position, vec3.new(0.0, 1.0, 0.0), 0.0001, ignoreList)
-			-- if the sweep test returned anything, there is something in the way
-			if traceResult then
-				-- try to check a bit above, to make sure it isn't aligned with the surface
-				local traceResult = NKPhysics.ObjectSweepCollect(droppedObj.m_item, args.position+vec3.new(0.0, 0.1, 0.0), vec3.new(0.0, -1.0, 0.0), 0.0001, ignoreList)
+			if ((not next(ignoreList) == nil) or not args.tKey or (not droppedObj.m_item:NKGetPlaceable() or droppedObj.m_item:NKGetPlaceable():NKIsPlacedWithPhysics()))then
+				-- make sure it is rotated the right way
+				droppedObj.m_item:NKSetOrientation(args.orientation)
+				-- check to make sure it has space
+				local traceResult = NKPhysics.ObjectSweepCollect(droppedObj.m_item, args.position, vec3.new(0.0, 1.0, 0.0), 0.0001, ignoreList)
 				-- if the sweep test returned anything, there is something in the way
 				if traceResult then
-					-- play sound to let the user know the object was blocked by something and cancel the placement
-					self:RaiseClientEvent("ClientEvent_FailedPlace", {})
-					return
+					-- try to check a bit above, to make sure it isn't aligned with the surface
+					local traceResult = NKPhysics.ObjectSweepCollect(droppedObj.m_item, args.position+vec3.new(0.0, 0.1, 0.0), vec3.new(0.0, -1.0, 0.0), 0.0001, ignoreList)
+					-- if the sweep test returned anything, there is something in the way
+					if traceResult then
+						-- play sound to let the user know the object was blocked by something and cancel the placement
+						self:RaiseClientEvent("ClientEvent_FailedPlace", {})
+						return
+					end
 				end
 			end
 		end
@@ -328,7 +335,12 @@ function SurvivalPlacementLogic:RunModeLogic(object, orientation)
 		-- If the object should align with the forward vector of the camera
 		--	calculate the appropriate quaternion.
 		if placeableComponent:NKShouldFaceCamera() then 
-			local theta = EternusEngine.SurvivalMode.m_activeCamera:Theta()
+			-- <KLUDGE> Until we can find a better way to obscure, hide or bake this information
+			--	into a player we will need to grab their controller's (camera) theta directly from the
+			--	WorldPlayer object.
+			local theta = self:NKGetWorldPlayer():NKGetTheta()
+			-- </KLUDGE>
+
 			GLM.Rotate(q, math.deg(theta), NKMath.Up)
 			orientation = q
 		end
@@ -418,6 +430,7 @@ function SurvivalPlacementLogic:_RemoveItemFromContainer(container, index, quant
 	if remainingSize > 0 then
 		-- If there are still some in our inventory after the removal, we need to split the stack
 		-- And spawn a new object to hold the dropped amount
+		NKPrint("DroppedObj = " .. droppedObj:GetName() .. "\n")
 		droppedObj = Eternus.GameObjectSystem:NKCreateNetworkedGameObject(droppedObj:GetName(), true, true)
 
 		if dropAmount > 0 then

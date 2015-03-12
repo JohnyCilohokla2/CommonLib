@@ -8,7 +8,7 @@ end
 
 function CL.println(...)
   for _,v in ipairs(arg) do
-   NKPrint(v .. " ")
+   NKPrint("[CL] " .. v .. " ")
   end
    NKPrint("\n")
 end
