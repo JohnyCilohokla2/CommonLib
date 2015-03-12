@@ -21,7 +21,7 @@ function TUGWorld:BuildTree()
 	-- local PolarBiomes =  PolarGenerator.new():GetRoot()
 	local MtnForestsBiomes =  MtnForestsGenerator.new():GetRoot()
 	local ForestsBiomes =  ForestsGenerator.new():GetRoot()
-	local DesertsBiomes =  DesertGenerator.new():GetRoot()
+	local DesertsBiomes =  DesertGenerator.new():GetRoot()	
 	local JungleBiomes =  JungleBiome.new():GetRoot()
 	local WorldMountains = MountainBiome.new():GetRoot()
 
