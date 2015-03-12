@@ -68,6 +68,7 @@ function TUGGameMode:Initialize()
 	Eternus.CommandService:NKRegisterChatCommand("printhealth", "PrintPlayerHealth")
 	Eternus.CommandService:NKRegisterChatCommand("sethealth", "SetPlayerHealth")
 	Eternus.CommandService:NKRegisterChatCommand("inspect", "Inspect")
+	Eternus.CommandService:NKRegisterChatCommand("printsound", "PrintSoundData")
 	
 	-- Make the crafting system.
 	self.m_craftingSystem = CraftingSystem.new()
@@ -112,6 +113,20 @@ end
 
 function TUGGameMode:PrintPlayerHealth(userInput, args)
 	self.player:PrintHealth()
+end
+
+function TUGGameMode:PrintSoundData( userInput, args )
+	local obj = Eternus.PhysicsWorld:NKGetWorldTracedGameObject()
+	if (obj) then
+		local objInst = obj:NKGetInstance()
+		if (objInst) then
+			objInst:PrintSound()
+		else
+			NKPrint("Object " .. obj:NKGetName() .. " has no script.\n")
+		end
+	else
+		NKPrint("Look at an object then try again.\n")
+	end
 end
 
 function TUGGameMode:Inspect( userInput, args )
@@ -177,25 +192,25 @@ function TUGGameMode:SetPlayerHealth(userInput, args)
 	end
 end
 
-function TUGGameMode:Server_CreatePawn( clientConnection )
-	local gameobject = nil
-
+function TUGGameMode:Server_GetPawnClassName( clientConnection )
 	if clientConnection:NKIsLocalPlayer() then
-		gameobject = Eternus.GameObjectSystem:NKCreateNetworkedGameObject("Local Player", true, false)
+		return "Local Player"
 	else
+		return "Network Player"
+	end
+end
+
+function TUGGameMode:Server_PawnReady( clientConnection )
+	local gameobject = clientConnection:NKGetPawn()
+
+	if not clientConnection:NKIsLocalPlayer() then
 		Eternus.CommandService:NKSendNetworkText(clientConnection:NKGetPlayerName() .. " is joining the server.")
-		gameobject = Eternus.GameObjectSystem:NKCreateNetworkedGameObject("Network Player", true, false)
 	end
 
-	if not gameobject then
-		out:PrintToChannel(DebugOutput.eDebugChannelLua, DebugOutput.ePriorityError, "Unable to create player pawn!\n")
-	else
-		
+	if gameobject then
 		gameobject:NKGetInstance().m_connection = clientConnection 
 		gameobject:NKGetInstance():InitializePawn()
 	end
-	
-	return gameobject
 end
 
 function TUGGameMode:Client_LocalPawnReady( conn )
@@ -206,7 +221,7 @@ end
 
 function TUGGameMode:Server_EnterWorld( clientConnection )
 	clientConnection:NKGetPawn():NKPlaceInWorld(false, false)
-
+	
 	gScoreboard:AddPlayer(clientConnection:NKGetPlayerName(), clientConnection:NKGetLastPing(), clientConnection)
 end
 
@@ -222,6 +237,8 @@ function TUGGameMode:Client_EnterWorld( conn )
 end
 
 function TUGGameMode:Server_LeaveWorld( clientConnection )
+
+	clientConnection:NKGetPawn():NKGetInstance().m_disconnectSignal:Fire(clientConnection)
 	Eternus.CommandService:NKSendNetworkText(clientConnection:NKGetPlayerName() .. " has left the server.")
 	clientConnection:NKGetPawn():NKRemoveFromWorld(true, false)
 	gScoreboard:RemovePlayer(clientConnection:NKGetPlayerName())
@@ -240,8 +257,6 @@ end
 function TUGGameMode:SetupInputSystem()
 
 	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Toggle Camera Mode", self, "ToggleCameraMode", KEY_ONCE)
-	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Show Players", self, "ShowPlayers", KEY_FLOOD)
-	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Toggle UI", self, "ToggleUI", KEY_ONCE)
 	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Return to Menu", self, "GoToMenu", KEY_ONCE)
 
 	Eternus.CommandService:NKRegisterChatCommand("time"				, "ChatCommandTime"				)
@@ -259,9 +274,8 @@ function TUGGameMode:SetupInputSystem()
 	Eternus.CommandService:NKRegisterChatCommand("setstat"			, "ChatCommandSetStat"			)
 	Eternus.CommandService:NKRegisterChatCommand("buff"				, "ChatCommandBuff"				)
 
-	
 	-- Server Only Commands
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 		Eternus.CommandService:NKRegisterChatCommand("maxviewdistance"	, "ChatCommandMaxViewDistance"	)
 		Eternus.CommandService:NKRegisterChatCommand("kick"				, "ChatCommandKick"				)
 		Eternus.CommandService:NKRegisterChatCommand("banlist"			, "ChatCommandBanList"			)
@@ -272,16 +286,84 @@ function TUGGameMode:SetupInputSystem()
 		Eternus.CommandService:NKRegisterChatCommand("allowconnections"	, "ChatCommandAllowConnections"	)
 	end
 	
-	if Eternus.IsExclusiveServer or Eternus.IsExclusiveClient then
-		Eternus.CommandService:NKRegisterChatCommand("ping"				, "ChatCommandPing"				)
-	end
+	Eternus.CommandService:NKRegisterChatCommand("ping", "ChatCommandPing")
+	
+
 
 	-- Debugging Commands
+	Eternus.CommandService:NKRegisterChatCommand("cullminrad"	, "ChatCommandCullMinRadius")
+	Eternus.CommandService:NKRegisterChatCommand("cullmaxrad"	, "ChatCommandCullMaxRadius")
+	Eternus.CommandService:NKRegisterChatCommand("cullmindist"	, "ChatCommandCullMinDist")
+	Eternus.CommandService:NKRegisterChatCommand("cullmaxdist"	, "ChatCommandCullMaxDist")
 	Eternus.CommandService:NKRegisterChatCommand("debugging", "DebuggingCommand")
 	Eternus.CommandService:NKRegisterChatCommand("logging", "LoggingCommand")
 	Eternus.CommandService:NKRegisterChatCommand("teleport", "TeleportCommand")
 	Eternus.CommandService:NKRegisterChatCommand("suppresserrors", "SuppressErrorsCommand")
 	Eternus.CommandService:NKRegisterChatCommand("se", "SuppressErrorsCommand")
+end
+
+-------------------------------------------------------------------------------
+function TUGGameMode:ChatCommandCullMinRadius(userInput, args)
+	if args[1] then
+		local radius = tonumber(args[1])
+		if radius then
+			Eternus.World:NKSetMinCullRadius(radius)
+			Eternus.CommandService:NKAddLocalText("Setting min cull radius to: " .. args[1] .. "\n")
+		else
+			Eternus.CommandService:NKAddLocalText("Invalid min cull radius: " .. args[1] .. "\n")
+		end
+	else
+		local r = Eternus.World:NKGetMinCullRadius()
+		Eternus.CommandService:NKAddLocalText("The current min cull radius is: " .. tostring(r) .. "\n")
+	end
+end
+
+-------------------------------------------------------------------------------
+function TUGGameMode:ChatCommandCullMaxRadius(userInput, args)
+	if args[1] then
+		local radius = tonumber(args[1])
+		if radius then
+			Eternus.World:NKSetMaxCullRadius(radius)
+			Eternus.CommandService:NKAddLocalText("Setting max cull radius to: " .. args[1] .. "\n")
+		else
+			Eternus.CommandService:NKAddLocalText("Invalid max cull radius: " .. args[1] .. "\n")
+		end
+	else
+		local r = Eternus.World:NKGetMaxCullRadius()
+		Eternus.CommandService:NKAddLocalText("The current max cull radius is: " .. tostring(r) .. "\n")
+	end
+end
+
+-------------------------------------------------------------------------------
+function TUGGameMode:ChatCommandCullMinDist(userInput, args)
+	if args[1] then
+		local dist = tonumber(args[1])
+		if dist then
+			Eternus.World:NKSetMinCullDist(dist)
+			Eternus.CommandService:NKAddLocalText("Setting min cull dist to: " .. args[1] .. "\n")
+		else
+			Eternus.CommandService:NKAddLocalText("Invalid min cull dist: " .. args[1] .. "\n")
+		end
+	else
+		local d = Eternus.World:NKGetMinCullDist()
+		Eternus.CommandService:NKAddLocalText("The current min cull dist is: " .. tostring(d) .. "\n")
+	end
+end
+
+-------------------------------------------------------------------------------
+function TUGGameMode:ChatCommandCullMaxDist(userInput, args)
+	if args[1] then
+		local dist = tonumber(args[1])
+		if dist then
+			Eternus.World:NKSetMaxCullDist(dist)
+			Eternus.CommandService:NKAddLocalText("Setting max cull dist to: " .. args[1] .. "\n")
+		else
+			Eternus.CommandService:NKAddLocalText("Invalid max cull dist: " .. args[1] .. "\n")
+		end
+	else
+		local d = Eternus.World:NKGetMaxCullDist()
+		Eternus.CommandService:NKAddLocalText("The current max cull dist is: " .. tostring(d) .. "\n")
+	end
 end
 
 function TUGGameMode:SuppressErrorsCommand(userInput, args)
@@ -311,6 +393,12 @@ function TUGGameMode:DebuggingCommand(userInput, args)
 		end
 	else 
 		EternusEngine.Debugging.Enabled = not EternusEngine.Debugging.Enabled
+	end
+
+	if EternusEngine.Debugging.Enabled then 
+		NKPrint("<Lua Debugging Enabled>\n")
+	else
+		NKPrint("<Lua Debugging Disabled>\n")
 	end
 end
 
@@ -417,7 +505,7 @@ function TUGGameMode:ChatCommandBuff( userInput, args )
 	buffArgs.action = action
 	buffArgs.type = type
 	buffArgs.stacks = stacks
-	NKPrint("\n---======---\nApplying buff to player.\nName: " .. buffName .. "\nDuration: " .. tostring(duration) .. "\nValue: " .. tostring(modifierValue) .. "\nAction: " .. actionString .. "\nType: " .. typeString .. "\nStacks: " .. tostring(stacks) .. "\n---======---\n")
+	--NKPrint("\n---======---\nApplying buff to player.\nName: " .. buffName .. "\nDuration: " .. tostring(duration) .. "\nValue: " .. tostring(modifierValue) .. "\nAction: " .. actionString .. "\nType: " .. typeString .. "\nStacks: " .. tostring(stacks) .. "\n---======---\n")
 	local newBuff = Buff.new(buffArgs)
 	self.player:ApplyBuff(newBuff)
 end
@@ -462,7 +550,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for displaying ping to server/all connected players.
 function TUGGameMode:ChatCommandPing( userInput, args )
-	if Eternus.IsExclusiveServer then -- Ping all connected players.
+	if Eternus.IsServer then -- Ping all connected players.
 		local pingString = ""
 		local players = Eternus.World:NKGetAllWorldPlayers()
 		for key,value in pairs(players) do
@@ -478,7 +566,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for kicking players from the server
 function TUGGameMode:ChatCommandKick( userInput, args )
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 		if not args[1] then
 			Eternus.CommandService:NKAddLocalText("Function: /kick <player name>\n")
 			return
@@ -502,7 +590,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for getting the list of bans
 function TUGGameMode:ChatCommandBanList( userInput, args )
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 
 		local ret = Eternus.Net:NKGetBanList()
 
@@ -517,7 +605,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for banning players from the server
 function TUGGameMode:ChatCommandBan( userInput, args )
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 		if not args[1] then
 			Eternus.CommandService:NKAddLocalText("Function: /ban <player name>\n")
 			return
@@ -541,7 +629,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for unbanning players from the server
 function TUGGameMode:ChatCommandUnban( userInput, args )
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 		if not args[1] then
 			Eternus.CommandService:NKAddLocalText("Function: /unban <ip> (hint: use /banlist to see current bans)\n")
 			return
@@ -565,7 +653,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for clearing banned players from the server
 function TUGGameMode:ChatCommandClearBans( userInput, args )
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 	
 		Eternus.Net:NKClearAllBans()
 
@@ -577,7 +665,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for changing max players on the server
 function TUGGameMode:ChatCommandMaxPlayers( userInput, args )
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 		if not args[1] then
 			local maxPlayers = tostring(Eternus.Net:NKGetMaxPlayers())
 			Eternus.CommandService:NKAddLocalText("Max allowed players: " .. maxPlayers .. "\n")
@@ -600,7 +688,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for enabling and disabling incoming connections
 function TUGGameMode:ChatCommandAllowConnections( userInput, args )
-	if Eternus.IsExclusiveServer then
+	if Eternus.IsServer then
 		if not args[1] then
 			Eternus.CommandService:NKAddLocalText("Function: /allowconnections <true | false>\n")
 			return
@@ -944,6 +1032,10 @@ function TUGGameMode:ChatCommandTakeDamage(userInput, args)
 	end
 end
 
+-------------------------------------------------------------------------------
+function TUGGameMode:GetPlayerInstance()
+	return self.player
+end
 
 -------------------------------------------------------------------------------
 -- Registers a lua-based slash command for the game.
@@ -980,54 +1072,6 @@ function TUGGameMode:ExecuteSlashCommand(userInput, args)
 end
 
 -------------------------------------------------------------------------------
-function TUGGameMode:GetPlayerInstance()
-	return self.player
-end
-
--------------------------------------------------------------------------------
-function TUGGameMode:ShowPlayers(down)
-
-	if not down then
-		-- Turn off the players window
-		self.m_gameModeUI.m_playersWindow:setVisible(false)
-		self.m_gameModeUI.m_crosshair:setVisible(true)
-		return
-	end
-
-	-- Turn on the players Window
-	if not self.m_gameModeUI.m_playersWindow:isVisible() then
-		self.m_gameModeUI.m_playersWindow:setVisible(true)
-		self.m_gameModeUI.m_crosshair:setVisible(false)
-	end
-end
-
--------------------------------------------------------------------------------
-function TUGGameMode:ToggleUI(down)
-
-	if not down then
-		return
-	end
-
-	-- Hide all UI when toggled
-	-- Gets the current state of the mouse so it can restore it when you show the UI again
-	if EternusEngine.UI.Layers.Gameplay:isVisible() then
-		EternusEngine.UI.Layers.Gameplay:hide()
-		NKPrint("Checking IsMouseHidden : " .. tostring(Eternus.InputSystem:NKIsMouseHidden()) .. "\n")
-		if Eternus.InputSystem:NKIsMouseHidden() then
-			Eternus.InputSystem:NKHideMouse()
-			self.m_restoreMouse = false
-		else
-			self.m_restoreMouse = true
-		end
-	else
-		EternusEngine.UI.Layers.Gameplay:show()
-		if self.m_restoreMouse then
-			Eternus.InputSystem:NKShowMouse()
-		end
-	end
-end
-
--------------------------------------------------------------------------------
 function TUGGameMode:OnTestPlacement(down)
 	-- Base state does nothing!
 end
@@ -1059,6 +1103,8 @@ end
 
 -------------------------------------------------------------------------------
 function TUGGameMode:SyncCameraModeToPlayer()
+	if not self.player then return end
+	
 	local camMode = self.player.m_camMode
 	
 	if camMode == LocalPlayer.ECameraMode.First then
@@ -1089,57 +1135,8 @@ end
 
 -------------------------------------------------------------------------------
 function TUGGameMode:SetupUI()
-	self.m_gameModeUI = TUGGameModeUIView.new("TUGGameModeLayout.layout")
-	self.m_gameModeUI:RegisterScoreboard(gScoreboard)
-	-- Add the new player to the scoreboard
 
-	self.player.m_targetAcquiredSignal:Add(function(hitObj)
-
-		if hitObj and hitObj:NKGetInstance() then
-			NKPrint("Target Acquired : " .. hitObj:NKGetName() .. "\n")
-
-			if self.m_gameModeUI.m_targetProgressBar:getProperty("ProgressImage") ~= "TUGGame/HealthBarLitGreen" then
-				self.m_gameModeUI.m_targetProgressBar:setProperty("ProgressImage", "TUGGame/HealthBarLitGreen")
-			end
-
-			self.m_gameModeUI:FadeAlpha(self.m_gameModeUI.m_targetProgressBar, 0.0, 1.0, 0.5)
-
-			local stackCount = nil
-
-			if hitObj:NKGetInstance().GetMaxStackSize then
-				stackCount = hitObj:NKGetInstance():GetMaxStackSize()
-			end
-
-			if stackCount and stackCount > 1 then
-				self.m_gameModeUI:SetTargetText(hitObj:NKGetInstance():GetDisplayName() .. " x " .. tostring(hitObj:NKGetInstance():GetStackSize()))
-			else
-				self.m_gameModeUI:SetTargetText(hitObj:NKGetInstance():GetDisplayName())
-			end
-		end
-	end)
-
-	self.player.m_targetLostSignal:Add(function()
-
-		self.m_gameModeUI:FadeAlpha(self.m_gameModeUI.m_targetProgressBar, 1.0, 0.0, 0.5)
-	end)
-
-	self.player.m_targetHealthChangedSignal:Add(function(hitObj)
-
-		if hitObj and hitObj:NKGetInstance() then
-			-- Safety Check if the object exists
-			if hitObj:NKGetInstance().GetMaxHitPoints then
-				-- If it has HitPoints
-				self.m_gameModeUI:SetTargetProgress(hitObj:NKGetInstance():GetHitPoints()/hitObj:NKGetInstance():GetMaxHitPoints())
-			elseif hitObj:NKGetInstance():InstanceOf(Character) then
-				-- If it is a Controller (Goat, Cat)
-				self.m_gameModeUI:SetTargetProgress(hitObj:NKGetInstance():GetCurrentHealth()/hitObj:NKGetInstance():GetMaxHealth())
-			else
-				self.m_gameModeUI:SetTargetProgress(0.0)
-			end
-		end
-	end)
-
-	EternusEngine.UI.Layers.Gameplay:show()
+	self.player:SetupUI()
 end
 
 
