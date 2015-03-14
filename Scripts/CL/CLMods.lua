@@ -4,17 +4,13 @@ end
 
 function CL:initializeMods()
 	for modID, mod in pairs(CL.mods) do
-		if mod.instance then
-			mod.instance:initialize()
-		end
+		mod:initialize()
 	end
 end
 	
 function CL:initializeHooks()
 	for modID, mod in pairs(CL.mods) do
-		if mod.instance then
-			mod.instance:loadHooks()
-		end
+		mod:loadHooks()
 	end
 end
 
