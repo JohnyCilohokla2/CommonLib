@@ -46,12 +46,12 @@ if (CL.mods == nil) then
 							CL.println("ScriptClass="..manifestLine)
 						end
 					end
-					
+					local ScriptMod = nil
 					if (ScriptFile~=nil) and (ScriptClass~=nil) then
 						include(ScriptFile)
-						local ScriptMod = _G[ScriptClass].new()
-						table.insert(CL.tugMods, ScriptMod)
+						ScriptMod = _G[ScriptClass].new()
 					end
+					table.insert(CL.tugMods, {instance = ScriptMod, fileName = ScriptFile, className = ScriptClass, path = modPath})
 				end
 			end
 		end
