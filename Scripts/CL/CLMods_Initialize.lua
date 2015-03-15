@@ -49,7 +49,11 @@ if (CL.mods == nil) then
 					local ScriptMod = nil
 					if (ScriptFile~=nil) and (ScriptClass~=nil) then
 						include(ScriptFile)
-						ScriptMod = _G[ScriptClass].new()
+						if _G[ScriptClass] and _G[ScriptClass].new then
+							ScriptMod = _G[ScriptClass].new()
+						else
+							NKError("Couldn't initialize "..tostring(ScriptClass).." from "..(modPath..ScriptFile).."!")
+						end
 					end
 					table.insert(CL.tugMods, {instance = ScriptMod, fileName = ScriptFile, className = ScriptClass, path = modPath})
 				end
