@@ -1,6 +1,3 @@
-include("Scripts/Core/Common.lua")
-include("Scripts/CL/Mod.lua")
-
 if CL_CommonLib == nil then
 	CL_CommonLib = CLMod.Subclass("CL_CommonLib")
 end

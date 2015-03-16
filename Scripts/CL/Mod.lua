@@ -1,5 +1,3 @@
-include("Scripts/Core/Common.lua")
-
 if CLMod == nil then
 	CLMod = EternusEngine.Class.Subclass("CLMod")
 	CLMod.m_name = nil

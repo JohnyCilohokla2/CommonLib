@@ -70,4 +70,4 @@ function LiquidContainer:Restore( inData, version )
 	self.m_liquidAmount = inData.liquidAmount or 0
 end
 
-return SurvivalPlacementLogic
+return LiquidProvider

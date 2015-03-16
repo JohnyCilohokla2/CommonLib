@@ -1,3 +1,4 @@
+include("Scripts/CL/Mod.lua")
 
 if (CL.mods == nil) then
 	CL.println("Common Lib - Initizing Mods")

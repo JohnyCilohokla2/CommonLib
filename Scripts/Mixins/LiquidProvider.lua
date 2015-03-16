@@ -13,4 +13,4 @@ end
 function LiquidProvider:OnLiquidContainerEmpty( position, player )
 end
 
-return SurvivalPlacementLogic
+return LiquidProvider

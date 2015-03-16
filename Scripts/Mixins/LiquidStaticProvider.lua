@@ -36,4 +36,4 @@ function LiquidStaticProvider:GetLiquid(dt, maxAmount, liquidType)
 	return self.m_liquid, pulledAmount
 end
 
-return SurvivalPlacementLogic
+return LiquidStaticProvider

@@ -1,5 +1,3 @@
-include("Scripts/Core/Common.lua")
-
 -------------------------------------------------------------------------------
 if ConnectorInterface == nil then
 	ConnectorInterface = EternusEngine.Mixin.Subclass("ConnectorInterface")
@@ -17,21 +15,46 @@ if ConnectorInterface == nil then
 		liquidDropOut = "liquidDropIn",
 		liquidDropIn = "liquidDropOut"
 	}
+	
+	
+	ConnectorInterface.Active = EternusEngine.Mixin.Subclass("ConnectorInterface_Active")
+
+	function ConnectorInterface.Active:Spawn()
+		self:NKEnableScriptProcessing(true)
+	end
+
+	function ConnectorInterface.Active:Update(dt)
+		if (not Eternus.IsServer) or (self.cl_connectionTick==0.5) then
+			return
+		end
+		self.cl_connectionTick = self.cl_connectionTick + dt;
+		
+		if (self.cl_connectionTick>0.5) then
+			self.cl_connectionTick = 0.5
+			self:initializeConnections()
+		end
+	end
 end
 
-function ConnectorInterface:connectionsUpdate(dt)
-	if (self.cl_connectionTick==nil) then
-		self.cl_connectionTick = 0
+
+
+function ConnectorInterface:Constructor(args)
+	self.cl_connectionTick = 0
+	if not args then
+		args = {}
 	end
-	if (self.cl_connectionTick==0.5) then
-		return
-	end
-	self.cl_connectionTick = self.cl_connectionTick + dt;
 	
-	if (self.cl_connectionTick>0.5) then
-		self.cl_connectionTick = 0.5
-		self:initializeConnections()
+	if not self.Passive then
+		self:Mixin(ConnectorInterface.Active, args)
 	end
+end
+
+function ConnectorInterface:Despawn()
+	self:disconnectAll()
+end
+
+function ConnectorInterface:OnEquip()
+	self:disconnectAll()
 end
 
 function ConnectorInterface:OnPlace()
@@ -127,6 +150,7 @@ function ConnectorInterface:Event_SeekingConnection(object)
 	CL.println(object:NKGetName().." Event_SeekingConnection()"..self:NKGetName())
 	self:reconnect(object:NKGetInstance())
 end
+
 function ConnectorInterface:setupConnection()
 	self:setupConnector()
 	if (self.cl_connectorInitialized and not self.cl_connectionsInitialized) then
