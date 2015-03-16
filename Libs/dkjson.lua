@@ -362,14 +362,14 @@ function json.encode (value, state)
   local ret, msg = encode2 (value, state.indent, state.level or 0,
                    buffer, state.bufferlen or 0, state.tables or {}, state.keyorder, state)
   if not ret then
-    error (msg, 2)
+	return "{}", false, msg
   elseif oldbuffer == buffer then
     state.bufferlen = ret
     return true
   else
     state.bufferlen = nil
     state.buffer = nil
-    return concat (buffer)
+    return concat (buffer), true, nil
   end
 end
 
@@ -601,7 +601,7 @@ function json.use_lpeg ()
   local g = require ("lpeg")
 
   if g.version() == "0.11" then
-    error "due to a bug in LPeg 0.11, it cannot be used for JSON matching"
+    NKError("due to a bug in LPeg 0.11, it cannot be used for JSON matching")
   end
 
   local pegmatch = g.match

@@ -1,5 +1,3 @@
-local json = require ("Scripts.CL.IDS.dkjson")
-
 local handlers = {}
 local isd_parse = nil
 
@@ -66,7 +64,7 @@ function isd(fileName)
 	local str = io.read("*all")
 	io.close(file)
 
-	local obj, pos, err = json.decode (str, 1, nil)
+	local obj, pos, err = CL.jsonDecode(str)
 	if err then
 		CL.println ("Error:", err)
 		return nil, err
