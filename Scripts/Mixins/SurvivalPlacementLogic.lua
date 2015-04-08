@@ -70,7 +70,6 @@ function SurvivalPlacementLogic:ServerEvent_Place( args )
 
 		local projectedPos = nil
 		
-		--local projectedRaycastHit = self:GetProjectedItemRaycastHitOld(dropItem, args.origin, args.direction)
 		local projectedRaycastHit = self:GetProjectedItemRaycastHit(dropItem, args.origin, args.direction)
 
 		if projectedRaycastHit then
@@ -430,7 +429,6 @@ function SurvivalPlacementLogic:_RemoveItemFromContainer(container, index, quant
 	if remainingSize > 0 then
 		-- If there are still some in our inventory after the removal, we need to split the stack
 		-- And spawn a new object to hold the dropped amount
-		NKPrint("DroppedObj = " .. droppedObj:GetName() .. "\n")
 		droppedObj = Eternus.GameObjectSystem:NKCreateNetworkedGameObject(droppedObj:GetName(), true, true)
 
 		if dropAmount > 0 then
@@ -456,10 +454,60 @@ function SurvivalPlacementLogic:_GetItemFromContainer(container, index)
 end
 
 -------------------------------------------------------------------------------
-
 function SurvivalPlacementLogic:_PlaceItemInWorld( item, origin, direction)
 	local projectedPos = self:GetProjectedItemPosition(item, origin, direction)
 	self:FinalizePlaceAt(item, projectedPos, quat.new(1.0, 0.0, 0.0, 0.0))
+end
+
+-------------------------------------------------------------------------------
+function SurvivalPlacementLogic:GetProjectedItemRaycastHit( item, origin, direction )
+	local maxTether = self:GetMaxReachDistance() * item:NKGetPlaceable():NKGetTetherDistanceModifier()
+	local distCheck = NKPhysics.RayCastCollect(origin, direction, maxTether, {self.object})
+
+	if distCheck then 
+		maxTether = distCheck.distance
+	end
+
+	local startFraction = math.max(0.0, math.min(item:NKGetBounds():NKGetRadius() / maxTether, 0.9))
+	local hits = NKPhysics.ObjectSweepCollectAll(item, origin, direction, maxTether + 0.2, {self.object}, startFraction)
+
+	if hits == nil then
+		return nil
+	end
+
+	if EternusEngine.Debugging.Enabled then
+		--NKWarn("Ignoring first %" .. tostring(100 * startFraction) .. " of NKPhysics.ObjectSweepCollectAll")
+		--NKWarn("[SurvivalPlacementLogic:GetProjectedItemRaycastHitTest] Hits: " .. table.getn(hits))
+
+		self.m_persistentManifolds = {}
+		self.m_persistentRays = {}
+
+		table.insert(self.m_persistentRays, {origin = origin, direction = direction, distance = maxTether})
+	end
+
+	for key, hit in pairs(hits) do
+		item:NKSetPosition(hit.queryPosition)
+
+		if EternusEngine.Debugging.Enabled then
+			table.insert(self.m_persistentManifolds, hit)
+		end
+	end
+
+	return hits[1]
+end
+
+-------------------------------------------------------------------------------
+function SurvivalPlacementLogic:GetProjectedItemPosition( item, origin, direction )
+	local maxReach = self:GetMaxReachDistance()
+	local maxTether = maxReach * item:NKGetPlaceable():NKGetTetherDistanceModifier()
+	
+	local result = NKPhysics.ObjectSweepCollect(item, origin, direction, maxTether, {self.object})
+
+	if result then
+		return result.queryPosition
+	else
+		return origin + (direction * vec3.new(maxReach, maxReach, maxReach))
+	end
 end
 
 return SurvivalPlacementLogic

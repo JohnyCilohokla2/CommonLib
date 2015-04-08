@@ -26,6 +26,7 @@ if EternusEngine.Initilized == nil then
 	EternusEngine.Initilized = true
 	include( "Scripts/Projectiles/ProjectileManager.lua")
 	EternusEngine.ProjectileManager = ProjectileManager.new({})
+	EternusEngine.DamageManager = include("Scripts/Core/DamageManager.lua")
 	EternusEngine.Statistics = include("Scripts/Core/NKStatistics.lua")
 end
 
@@ -41,7 +42,7 @@ end
 
 -- This covers the initial startup of the engine, since systems
 --	are only partially online when the gui is ready to link with Eternus.
-if EternusEngine.UI == nil then
+if EternusEngine.UI == nil and CEGUI then
 	EternusEngine.UI = {}
 	EternusEngine.UI.System = CEGUI.System:getSingleton()
 	EternusEngine.UI.Fonts = CEGUI.FontManager:getSingleton()
@@ -199,12 +200,6 @@ EternusEngine.EFailReason =
 		end
 	end,
 }
-
-
-EternusEngine.MAX_RAYCAST_DISTANCE = 10000.0
-EternusEngine.Debugging.Enabled = false
-EternusEngine.Debugging.Generation = false
-EternusEngine.Debugging.GenerationDistance = 6
 
 -- SHOULD BE USING ETERNUS!!!
 if Eternus.Debugging == nil then

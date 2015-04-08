@@ -7,10 +7,11 @@ function strEndsWith(String,endString)
 end
 
 function CL.println(...)
+	NKPrint("[CL] ")
 	for _,v in ipairs(arg) do
-		NKPrint("[CL] " .. v .. " ")
+		NKPrint(v .. " ")
 	end
-		NKPrint("\n")
+	NKPrint("\n")
 end
 
 CL.out = CL.println

@@ -6,17 +6,18 @@ include("Scripts/CL/UI/DebuggingBox.lua")
 CL.println("CommonLib:__Initialize")
 if CommonLib == nil then
 	CommonLib = EternusEngine.ModScriptClass.Subclass("CommonLib")
-	CommonLib.CLMod = CL.mods["CommonLib"]
 	CL.println("CommonLib:_Initialize")
 end
 
 -------------------------------------------------------------------------------
-function CommonLib:Constructor(  )
+function CommonLib:Constructor( )
 	CL.println("CommonLib:Constructor")
-	CommonLib.CLMod:connectHandler(self)
-	--self.m_showInventory2 = true
-	--CEGUI.SchemeManager:getSingleton():createFromFile("CL.scheme")
+	CEGUI.SchemeManager:getSingleton():createFromFile("CL.scheme")
 	
+end
+
+function CommonLib:initializeHooks( )
+	self.m_hookList = {"hook.lua"}
 end
 
  -------------------------------------------------------------------------------
@@ -37,8 +38,6 @@ function CommonLib:Initialize()
 	self.cl_debuggingBox:SetSize(0.2, 0.2)
 	self.cl_debuggingBox:SetText("Here! I'm over here! Notice me!")
 	--self.cl_debuggingBox:SetProgressImage("TUGGame/HealthBarLitRed")
-	
-	
 end
 
 -------------------------------------------------------------------------------
@@ -96,10 +95,10 @@ function CommonLib:Process(dt)
 			if (traceInstance.NKGetName ~= nil) then
 				out = out .. (" \n (" .. traceInstance:NKGetName() ..")")
 			end
-			CL.mods["CommonLib"].m_handler.cl_debuggingBox:SetText(out)
+			self.cl_debuggingBox:SetText(out)
 		end
 	else
-		CL.mods["CommonLib"].m_handler.cl_debuggingBox:SetText("No object selected")
+		self.cl_debuggingBox:SetText("No object selected")
 	end
 	local location = vec3.new(49880.0, 155.0, 50015.0);
 	
@@ -149,4 +148,5 @@ end
 	Eternus.GameState:ToggleCustomInventory( Eternus.GameState.m_survivalUI.m_backpackView2 )
 end]]
 
+CL.println(" [EntityFramework] CommonLib")
 EntityFramework:RegisterModScript(CommonLib)

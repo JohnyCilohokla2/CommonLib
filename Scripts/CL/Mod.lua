@@ -1,25 +1,11 @@
 if CLMod == nil then
-	CLMod = EternusEngine.Class.Subclass("CLMod")
-	CLMod.m_name = nil
-	CLMod.m_hookList = {}
-	CLMod.m_path = nil
-	CLMod.m_handler = nil
+	CLMod = EternusEngine.Mixin.Subclass("CLMod")
 end
 
-function CLMod:Constructor( args, path )
+function CLMod:setup( path )
+	CL.println("CLMod:setup" .. path)
+	self.m_hookList = {}
 	self.m_path = path
-	self:setup(args, path)
-end
-
-	
-function CLMod:setup( args, path )
-end
-
-function CLMod:initialize()
-end
-
-function CLMod:connectHandler(handler)
-	self.m_handler = handler
 end
 
 function CLMod:loadHooks()
@@ -35,3 +21,5 @@ function CLMod:loadHooks()
 		end
 	end
 end
+
+return CLMod

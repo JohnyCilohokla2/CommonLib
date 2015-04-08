@@ -23,17 +23,7 @@ end
 include("Scripts/Core/GameObjectClass.lua")
 
 if GameStateClass == nil then
-	GameStateClass = Class.Subclass("GameStateClass", __nativedelegate(BaseGameState, "state"))
-	function GameStateClass:Constructor( nativeObject )
-		assert(nativeObject)
-		if nativeObject then
-			self.state = nativeObject;
-		end
-	end
-end
-
-if RecipeClass == nil then
-	RecipeClass = Class.Subclass("RecipeClass")
+	GameStateClass = Class.Subclass("GameStateClass")
 end
 
 if BiomeClass == nil then
@@ -41,7 +31,8 @@ if BiomeClass == nil then
 end
 
 if ModScriptClass == nil then
-	ModScriptClass = Class.Subclass("ModScriptClass")
+	ModScriptClass = require("Scripts.Core.SingletonClass").Subclass("ModScriptClass")
+	ModScriptClass.StaticMixin(require("Scripts.CL.Mod"))
 end
 
 include("Scripts/CL/CL.lua")

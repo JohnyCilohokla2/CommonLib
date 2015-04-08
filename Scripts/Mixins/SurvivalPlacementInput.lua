@@ -11,11 +11,7 @@ SurvivalPlacementInput = EternusEngine.Mixin.Subclass("SurvivalPlacementInput")
 local MAX_RAYCAST_DISTANCE = 6.0
 -------------------------------------------------------------------------------
 
-NKRegisterEvent("ClientEvent_FailedPlace", 
-	{
-		
-	}
-)
+NKRegisterEvent("ClientEvent_FailedPlace", {} )
 
 -------------------------------------------------------------------------------
 function SurvivalPlacementInput:Constructor(args)
@@ -144,14 +140,14 @@ function SurvivalPlacementInput:HandleMouse(dt)
 		allowPlayerControl = false
 	elseif Eternus.InputSystem:NKIsDown(EternusKeycodes.MOUSE_RCLICK) then
 		local rayCastDist = MAX_RAYCAST_DISTANCE * ghostObj:NKGetPlaceable():NKGetTetherDistanceModifier()
-		local tetherDistance = EternusEngine.SurvivalMode.state:NKGetTetherDistance()
+		local tetherDistance = EternusEngine.SurvivalMode:GetTetherDistance()
 		tetherDistance = tetherDistance - (delta.y + delta.y)
 		if tetherDistance > rayCastDist then
 			tetherDistance = rayCastDist
 		elseif tetherDistance < 2.0 then
 			tetherDistance = 2.0
 		end
-		EternusEngine.SurvivalMode.state:NKSetTetherDistance(tetherDistance)
+		EternusEngine.SurvivalMode:SetTetherDistance(tetherDistance)
 		allowPlayerControl = false
 	end
 	
@@ -316,7 +312,7 @@ function SurvivalPlacementInput:ProcessGhostObject(dt)
 	local cameraPos = EternusEngine.SurvivalMode.m_activeCamera:NKGetLocation()
 	
 	-- Find the closest max distance
-	local maxDistance = EternusEngine.SurvivalMode.state:NKGetTetherDistance() -- tetherDistance
+	local maxDistance = EternusEngine.SurvivalMode:GetTetherDistance() -- tetherDistance
 	
 	local rayResult = NKPhysics.RayCastCollectAll(cameraPos, fwdVec, maxDistance * 1.1, {self})
 	local hitObject = nil
@@ -392,7 +388,7 @@ function SurvivalPlacementInput:SetPlacementMode(to)
 			self.m_ghostObject:NKScale(NKMath.RangeMapping(self.m_equippedItem:NKGetStackCount(), 1.0, 100.0, 1.0, 2.5), false)
 		end
 
-		EternusEngine.SurvivalMode.state:NKSetTetherDistance((MAX_RAYCAST_DISTANCE * self.m_ghostObject:NKGetPlaceable():NKGetTetherDistanceModifier()) / 2.0)
+		EternusEngine.SurvivalMode:SetTetherDistance((MAX_RAYCAST_DISTANCE * self.m_ghostObject:NKGetPlaceable():NKGetTetherDistanceModifier()) / 2.0)
 
 		local durability = 0.0
 		local handObjEquipable = self.m_equippedItem:NKGetEquipable()

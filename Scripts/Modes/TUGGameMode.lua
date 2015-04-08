@@ -1,8 +1,11 @@
 -- TUGGameMode
-include("Scripts/UI/TUGGameModeUIView.lua")
-include("Scripts/Characters/LocalPlayer.lua")
+if Eternus.IsClient then -- These are not used in a dedicated server environment
+	include("Scripts/UI/TUGGameModeUIView.lua")
+	include("Scripts/Characters/LocalPlayer.lua")
+end
+
 include("Scripts/Core/Common.lua")
-include("Scripts/CraftingSystem.lua")
+include("Scripts/Recipes/CraftingSystem.lua")
 include("Scripts/Objects/Scoreboard.lua")
 
 include("Scripts/CL/CL.lua")
@@ -23,6 +26,8 @@ TUGGameMode.CrosshairSquare 		= "TUGGame/CrosshairSquare"
 TUGGameMode.CrosshairSquareRounded	= "TUGGame/CrosshairSquareRounded"
 TUGGameMode.CrosshairSphere			= "TUGGame/CrosshairSphere"
 
+TUGGameMode.DefaultTetherDistance 	= 15.0
+
 -------------------------------------------------------------------------------
 -- This is called before creating a new gamestate script when you create a new game
 function TUGGameMode:Cleanup()
@@ -37,6 +42,7 @@ function TUGGameMode:Initialize()
 	self.m_stateActive = false
 	self.m_appHasFocus = true
 	self.m_restoreMouse= false
+	self.m_tetherdist  = self.DefaultTetherDistance 
 	--Setup the cameras
 	self.m_fpcamera   = FirstPersonCamera.new()
 	self.m_tpcamera   = ThirdPersonCamera.new()
@@ -53,7 +59,6 @@ function TUGGameMode:Initialize()
 
 	-- TODO: NetworkingDev
 	self.m_activeCamera = self.m_fpcamera
-	--self.state:NKSetActiveCamera(self.m_activeCamera)
 
 	-- Setup the input callbacks
 	-- Moving these to the enter function so we know we
@@ -69,17 +74,8 @@ function TUGGameMode:Initialize()
 	Eternus.CommandService:NKRegisterChatCommand("sethealth", "SetPlayerHealth")
 	Eternus.CommandService:NKRegisterChatCommand("inspect", "Inspect")
 	Eternus.CommandService:NKRegisterChatCommand("printsound", "PrintSoundData")
-	
-	-- Make the crafting system.
-	self.m_craftingSystem = CraftingSystem.new()
-	self.m_craftingSystem:ParseRecipeFile("Data/Crafting/Core_crafting.txt")
-	
-	CL:RegisterCrafting(self.m_craftingSystem)
-
 
 	self:SetupInputSystem()
-	
-	CL:InitializeTUGMods()
 	return 0;
 end
 
@@ -226,7 +222,6 @@ function TUGGameMode:Server_EnterWorld( clientConnection )
 end
 
 function TUGGameMode:Client_EnterWorld( conn )
-
 	if self.player.Initialize then
 		self.player:Initialize(self)
 	end
@@ -237,27 +232,15 @@ function TUGGameMode:Client_EnterWorld( conn )
 end
 
 function TUGGameMode:Server_LeaveWorld( clientConnection )
-
 	clientConnection:NKGetPawn():NKGetInstance().m_disconnectSignal:Fire(clientConnection)
 	Eternus.CommandService:NKSendNetworkText(clientConnection:NKGetPlayerName() .. " has left the server.")
 	clientConnection:NKGetPawn():NKRemoveFromWorld(true, false)
 	gScoreboard:RemovePlayer(clientConnection:NKGetPlayerName())
 end
 
-function TUGGameMode:GoToMenu( down )
-	NKPrint("GoToMenu Called.")
-	if down then
-		return
-	end
-	Eternus.GameState.state:NKRequestSwitchGameStateToMenu(true)
-end
-
  -------------------------------------------------------------------------------
  -- Register input for TUGGameMode mode.
 function TUGGameMode:SetupInputSystem()
-
-	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Toggle Camera Mode", self, "ToggleCameraMode", KEY_ONCE)
-	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Return to Menu", self, "GoToMenu", KEY_ONCE)
 
 	Eternus.CommandService:NKRegisterChatCommand("time"				, "ChatCommandTime"				)
 	Eternus.CommandService:NKRegisterChatCommand("timescale"		, "ChatCommandTimeScale"		)
@@ -852,7 +835,7 @@ end
 -------------------------------------------------------------------------------
 -- Chat command for setting/getting the time.  
 function TUGGameMode:ChatCommandTime( userInput, args )
-	local uiContainer = self.state:NKGetUIContainer()
+	local uiContainer = NKGetDeprecatedUIContainer()
 	local miscUI = uiContainer:NKGetMiscellaneousUI()
 	
 	
@@ -1027,7 +1010,7 @@ function TUGGameMode:ChatCommandTakeDamage(userInput, args)
 		local damage = tonumber(args[1])
 
 		if damage then
-			self.player:RaiseServerEvent("ServerEvent_TakeDamage", { damage = damage})
+			self.player:RaiseServerEvent("ServerEvent_TakeDamage", { damage = damage, category = "Undefined"})
 		end
 	end
 end
@@ -1077,31 +1060,6 @@ function TUGGameMode:OnTestPlacement(down)
 end
 
 -------------------------------------------------------------------------------
--- Ctr+3: Switch between First and Third person camera.
-function TUGGameMode:ToggleCameraMode(down)
-	-- Wait for keyup
-	if down then 
-		return
-	end
-	
-	if self.player:HasDied() then
-		return
-	end
-	
-	-- Swap the m_activeCamera
-	if self.m_activeCamera ~= self.m_fpcamera then
-		self.m_activeCamera = self.m_fpcamera
-		self.player:SetCameraMode(LocalPlayer.ECameraMode.First)
-	else
-		self.m_activeCamera = self.m_tpcamera
-		self.player:SetCameraMode(LocalPlayer.ECameraMode.Third)
-	end
-	
-	-- Inform the backing TUGGameMode
-	self.state:NKSetActiveCamera(self.m_activeCamera)
-end
-
--------------------------------------------------------------------------------
 function TUGGameMode:SyncCameraModeToPlayer()
 	if not self.player then return end
 	
@@ -1112,20 +1070,18 @@ function TUGGameMode:SyncCameraModeToPlayer()
 	elseif camMode == LocalPlayer.ECameraMode.Third then
 		self.m_activeCamera = self.m_tpcamera
 	end
-	self.state:NKSetActiveCamera(self.m_activeCamera)
+	NKSetActiveCamera(self.m_activeCamera)
 end
 
 -------------------------------------------------------------------------------
 function TUGGameMode:Enter()	
-	self.state:NKSetActiveCamera(self.m_activeCamera)
+	NKSetActiveCamera(self.m_activeCamera)
 	self.m_stateActive = true
-	CL:EnterTUGMods()
 end
 
 -------------------------------------------------------------------------------
 function TUGGameMode:Leave()
 	self.m_stateActive = false
-	CL:LeaveTUGMods()
 end
 
 -------------------------------------------------------------------------------
@@ -1143,7 +1099,6 @@ end
 local frameCount = 0
 -------------------------------------------------------------------------------
 function TUGGameMode:Process(dt)
-	CL:ProcessTUGMods()
 	--[[
 	if frameCount > 60 then
 		local str = tostring(collectgarbage("count"))
@@ -1177,9 +1132,17 @@ function TUGGameMode:SpawnGameObject( name, position, rotation )
 end
 
 function TUGGameMode:PushToChatQueue( message )
-	return self.state:NKGetUIContainer():NKGetMiscellaneousUI():NKChatWindow_AddText(message)
+	return NKGetDeprecatedUIContainer():NKGetMiscellaneousUI():NKChatWindow_AddText(message)
 end
 
 function TUGGameMode:GetLightingController()
 	return nil
+end
+
+function TUGGameMode:GetTetherDistance()
+	return self.m_tetherdist
+end
+
+function TUGGameMode:SetTetherDistance( distance )
+	self.m_tetherdist = distance
 end
