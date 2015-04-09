@@ -38,6 +38,8 @@ function CommonLib:Initialize()
 	self.cl_debuggingBox:SetSize(0.2, 0.2)
 	self.cl_debuggingBox:SetText("Here! I'm over here! Notice me!")
 	--self.cl_debuggingBox:SetProgressImage("TUGGame/HealthBarLitRed")
+	
+	CL:RegisterCrafting(Eternus.CraftingSystem)
 end
 
 -------------------------------------------------------------------------------

@@ -22,3 +22,13 @@ function CL:ModifyBiomeData(biomeName, biome)
 		end
 	end
 end
+
+function CL:RegisterCrafting(craftingSystem)
+	for modID, mod in pairs(CL.tugMods) do
+		if mod.instance then
+			if mod.instance.RegisterCrafting then
+				mod.instance:RegisterCrafting(craftingSystem)
+			end
+		end
+	end
+end
