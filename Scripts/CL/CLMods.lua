@@ -3,7 +3,7 @@ if CL == nil then
 end
 	
 function CL:initializeHooks()
-	for modID, mod in pairs(CL.tugMods) do
+	for modID, mod in pairs(CL.mods) do
 		if mod.instance then
 			if mod.instance.initializeHooks then
 				mod.instance:initializeHooks()
@@ -14,7 +14,7 @@ function CL:initializeHooks()
 end
 
 function CL:ModifyBiomeData(biomeName, biome)
-	for modID, mod in pairs(CL.tugMods) do
+	for modID, mod in pairs(CL.mods) do
 		if mod.instance then
 			if mod.instance.ModifyBiomeData then
 				mod.instance:ModifyBiomeData(biomeName, biome)
@@ -24,7 +24,7 @@ function CL:ModifyBiomeData(biomeName, biome)
 end
 
 function CL:RegisterCrafting(craftingSystem)
-	for modID, mod in pairs(CL.tugMods) do
+	for modID, mod in pairs(CL.mods) do
 		if mod.instance then
 			if mod.instance.RegisterCrafting then
 				mod.instance:RegisterCrafting(craftingSystem)

@@ -3,7 +3,6 @@ include("Scripts/CL/Mod.lua")
 if (CL.mods == nil) then
 	CL.println("Common Lib - Initizing Mods")
 	CL.mods = {}
-	CL.tugMods = {}
 
 	local file = io.open("Config/mods.txt", "r")
 	if file then
@@ -38,7 +37,7 @@ if (CL.mods == nil) then
 							NKError("Couldn't initialize "..tostring(ScriptClass).." from "..(modPath..ScriptFile).."!")
 						end
 					end
-					table.insert(CL.tugMods, {instance = ScriptMod, fileName = ScriptFile, className = ScriptClass, path = modPath})
+					table.insert(CL.mods, {instance = ScriptMod, fileName = ScriptFile, className = ScriptClass, path = modPath})
 				end
 			end
 		end
