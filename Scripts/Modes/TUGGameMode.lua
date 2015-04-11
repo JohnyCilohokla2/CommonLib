@@ -7,9 +7,6 @@ end
 include("Scripts/Core/Common.lua")
 include("Scripts/Recipes/CraftingSystem.lua")
 include("Scripts/Objects/Scoreboard.lua")
-
-include("Scripts/CL/CL.lua")
-
 local out 				= Eternus.Output
 
 -------------------------------------------------------------------------------
