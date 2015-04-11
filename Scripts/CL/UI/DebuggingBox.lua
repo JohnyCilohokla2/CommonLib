@@ -1,8 +1,6 @@
 include("Scripts/Core/Common.lua")
 include("Scripts/CL/UI/Container.lua")
 
-local Windows = EternusEngine.UI.Windows
-
 -------------------------------------------------------------------------------
 if CL_DebuggingBox == nil then
 	CL_DebuggingBox = CL_UIContainer.Subclass("CL_DebuggingBox")
@@ -21,13 +19,13 @@ end
 function CL_DebuggingBox:PostLoad( args )
 
 	-- create and setup the window
-	self.m_window = Windows:createWindow("TUGLook/StaticImage", "DebuggingBox") -- create new window using the TUGLook/StaticImage scheme
+	self.m_window = EternusEngine.UI.Windows:createWindow("TUGLook/StaticImage", "DebuggingBox") -- create new window using the TUGLook/StaticImage scheme
 	self.m_window:setProperty("BackgroundEnabled", "false") -- configure the background for image
 	self.m_window:setProperty("FrameEnabled", "false") -- configure the background for image
 	self.m_window:setProperty("Image", "CL/DebuggingBox") -- set the background image
 	
 	
-	self.m_text = Windows:createWindow("TUGLook/StaticText") -- create new window using the TUGLook/StaticText scheme
+	self.m_text = EternusEngine.UI.Windows:createWindow("TUGLook/StaticText") -- create new window using the TUGLook/StaticText scheme
 	self.m_window:addChild(self.m_text) -- add it to the DebuggingBox
 	
 	self.m_text:setArea(CEGUI.UDim(0.04,0), CEGUI.UDim(0.04,0), CEGUI.UDim(0.92,0), CEGUI.UDim(0.92,0)) -- set the dimentions

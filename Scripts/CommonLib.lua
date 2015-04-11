@@ -1,6 +1,5 @@
 -- CommonLib
 
-include("Scripts/CL/UI/DebuggingBox.lua")
 
 -------------------------------------------------------------------------------
 CL.println("CommonLib:__Initialize")
@@ -12,11 +11,12 @@ end
 -------------------------------------------------------------------------------
 function CommonLib:Constructor( )
 	CL.println("CommonLib:Constructor")
-	CEGUI.SchemeManager:getSingleton():createFromFile("CL.scheme")
 	
 end
 
 function CommonLib:initializeHooks( )
+	include("Scripts/CL/UI/DebuggingBox.lua")
+	CEGUI.SchemeManager:getSingleton():createFromFile("CL.scheme")
 	self.m_hookList = {"hook.lua"}
 end
 
