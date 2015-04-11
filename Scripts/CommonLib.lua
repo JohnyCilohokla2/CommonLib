@@ -12,17 +12,19 @@ end
 function CommonLib:Constructor( )
 	CL.println("CommonLib:Constructor")
 	
+	self.hitObj = nil
 end
 
 function CommonLib:initializeHooks( )
-	include("Scripts/CL/UI/DebuggingBox.lua")
-	CEGUI.SchemeManager:getSingleton():createFromFile("CL.scheme")
 	self.m_hookList = {"hook.lua"}
 end
 
  -------------------------------------------------------------------------------
  -- Called once from C++ at engine initialization time
 function CommonLib:Initialize()
+	include("Scripts/CL/UI/DebuggingBox.lua")
+	CEGUI.SchemeManager:getSingleton():createFromFile("CL.scheme")
+	
 	CL.println("CommonLib:Initialize")
 
 	Eternus.GameState:RegisterSlashCommand("CommonLib", self, "Info")
@@ -34,12 +36,14 @@ function CommonLib:Initialize()
 	--Eternus.World:NKGetKeybinds():NKRegisterDirectCommand("N", self, "TX", KEY_ONCE)
 	
 	self.cl_debuggingBox = CL_DebuggingBox.new("SurvivalLayout.layout")
-	self.cl_debuggingBox:SetPosition(0.8, 0.0)
 	self.cl_debuggingBox:SetSize(0.2, 0.2)
+	self.cl_debuggingBox:SetPosition(0.8, 0.0, -10, 10)
 	self.cl_debuggingBox:SetText("Here! I'm over here! Notice me!")
 	--self.cl_debuggingBox:SetProgressImage("TUGGame/HealthBarLitRed")
 	
 	CL:RegisterCrafting(Eternus.CraftingSystem)
+	
+	
 end
 
 -------------------------------------------------------------------------------
@@ -53,6 +57,19 @@ function CommonLib:Enter()
 	--Eternus.GameState.m_survivalUI.m_backpackView2:Hide()
 	--Eternus.InputSystem:NKHideMouse()
 	--self.m_showInventory2 = false
+	
+	
+	local player = Eternus.GameState:GetLocalPlayer():NKGetInstance()
+	
+	player.m_targetAcquiredSignal:Add(function(hitObj)
+		if hitObj and hitObj:NKGetInstance() then
+			self.hitObj = hitObj
+		end
+	end)
+	
+	player.m_targetLostSignal:Add(function()
+		self.hitObj = nil
+	end)
 end
 
 -------------------------------------------------------------------------------
@@ -73,36 +90,32 @@ end
 -- Called from C++ every update tick
 function CommonLib:Process(dt)
 	--self.cl_debuggingBox:SetProgress(1)
-	local traceObj = Eternus.PhysicsWorld:NKGetWorldTracedGameObject()
-	if (traceObj~=nil) then
-		local traceInstance = traceObj:NKGetInstance()
-		if (traceInstance~=nil) then
-			local out = traceInstance:NKGetDisplayName();
-			
-			local traceEquipable = traceInstance:NKGetEquipable()
-			
-			if (traceInstance.GetMaxStackCount and traceInstance:GetMaxStackCount() > 1) then
-				out = out .. ("\n" .. traceInstance:GetStackCount() .." / " .. traceInstance:GetMaxStackCount())
-			end
-			if (traceEquipable ~= nil) then
-				out = out .. ("\n{" .. traceEquipable:NKGetCurrentDurability() .." / " .. traceEquipable:NKGetMaxDurability() .. "}")
-			end
-			
-			--if (traceInstance.GetDebuggingText ~= nil) then
-			--	out = out .. (" \n " .. traceInstance:GetDebuggingText() .."")
-			--else
-			if (traceInstance.GetDebuggingText ~= nil) then
-				out = out .. (" \n " .. traceInstance:GetDebuggingText() .."")
-			end
-			if (traceInstance.NKGetName ~= nil) then
-				out = out .. (" \n (" .. traceInstance:NKGetName() ..")")
-			end
-			self.cl_debuggingBox:SetText(out)
+	
+	if self.hitObj and self.hitObj:NKGetInstance() then
+		local traceInstance = self.hitObj:NKGetInstance()
+		local out = traceInstance:NKGetDisplayName();
+		
+		local traceEquipable = traceInstance:NKGetEquipable()
+		
+		if (traceInstance.GetMaxStackCount and traceInstance:GetMaxStackCount() > 1) then
+			out = out .. ("\n" .. traceInstance:GetStackCount() .." / " .. traceInstance:GetMaxStackCount())
 		end
+		if (traceEquipable ~= nil) then
+			out = out .. ("\n{" .. traceEquipable:NKGetCurrentDurability() .." / " .. traceEquipable:NKGetMaxDurability() .. "}")
+		end
+		if (traceInstance.GetDebuggingText ~= nil) then
+			out = out .. (" \n " .. traceInstance:GetDebuggingText() .."")
+		end
+		if (traceInstance.NKGetName ~= nil) then
+			out = out .. (" \n (" .. traceInstance:NKGetName() ..")")
+		end
+		self.cl_debuggingBox:SetText(out)
 	else
-		self.cl_debuggingBox:SetText("No object selected")
+		self.cl_debuggingBox:SetText("No object selected, lol")
+		self.hitObj = nil
 	end
-	local location = vec3.new(49880.0, 155.0, 50015.0);
+	
+	--[[local location = vec3.new(49880.0, 155.0, 50015.0);
 	
 	RDU.NKDisplayLine(location + vec3.new(0.0, 0.0, 0.0), location + vec3.new(0.0, 4.0, 0.0), RDU.eRED)
 	RDU.NKDisplayLine(location + vec3.new(0.0, 4.0, 0.0), location + vec3.new(4.0, 4.0, 0.0), RDU.eRED)
@@ -115,9 +128,10 @@ function CommonLib:Process(dt)
 	RDU.NKDisplayLine(location + vec3.new(0.0, 4.0, 0.0), location + vec3.new(4.0, 4.0, 0.0), RDU.eRED)
 	RDU.NKDisplayLine(location + vec3.new(4.0, 4.0, 0.0), location + vec3.new(4.0, 0.0, 0.0), RDU.eRED)
 	RDU.NKDisplayLine(location + vec3.new(4.0, 0.0, 0.0), location + vec3.new(0.0, 0.0, 0.0), RDU.eRED)
-	
-	self.cl_debuggingBox:SetSize(0.2, 0.2)
-	self.cl_debuggingBox:SetPosition(0.8, 0.0, -10, 10)
+	]]
+end
+
+function CommonLib:Render()
 end
 
 function CommonLib:Render()
