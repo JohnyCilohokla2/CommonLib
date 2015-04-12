@@ -26,9 +26,6 @@ function SurvivalPlacementInput:Spawn()
 	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Drop Item", self, "DropHandItem", KEY_ONCE)
 	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Toggle Placement Mode", self, "TogglePlacementMode", KEY_ONCE)
 	Eternus.World:NKGetKeybinds():NKRegisterDirectCommand("R", self, "TogglePlacementMode2", KEY_ONCE)
-	Eternus.World:NKGetKeybinds():NKRegisterNamedCommand("Toggle Placement Mode3", self, "TogglePlacementMode3", KEY_ONCE)
-	--Eternus.InputSystem:NKRegisterInputEvent("Drop Item", self, "DropHandItem", KEY_ONCE)
-	--Eternus.InputSystem:NKRegisterInputEvent("Toggle Placement Mode", self, "TogglePlacementMode", KEY_ONCE)
 end
 
 -------------------------------------------------------------------------------
@@ -38,14 +35,6 @@ function SurvivalPlacementInput:TogglePlacementMode2(down)
 	end
 
 	local hookRet = CL:hook("SurvivalPlacementInput:TogglePlacementMode2",self)
-end
--------------------------------------------------------------------------------
-function SurvivalPlacementInput:TogglePlacementMode3(down)
-	if not down or self:IsDead() then
-		return
-	end
-
-	local hookRet = CL:hook("SurvivalPlacementInput:TogglePlacementMode3",self)
 end
 
 -------------------------------------------------------------------------------

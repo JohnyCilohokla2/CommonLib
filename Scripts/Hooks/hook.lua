@@ -62,22 +62,7 @@ function CL_PlacementHook:TogglePlacementMode2(object, ...)
 	CL.println("Changed mode to ",self.cl_currentMode)
 end
 
-function CL_PlacementHook:PrimaryAction_postPlace(object, instance, ...)
-	CL.println ("CL_PlacementHook:PrimaryAction_postPlace")
-	
-	-- TODO move to OnPlace!
-	if (instance~=nil and self.cl_lastConnection~=nil and self.cl_currentMode == 2) then
-		if instance:InstanceOf(ConnectorInterface) then
-			instance:connect(self.cl_lastConnection.selfConnectorName, self.cl_lastConnection.hitConnectorName, self.cl_lastConnection.hit)
-			self.cl_lastConnection.hit:NKGetInstance():connect(self.cl_lastConnection.hitConnectorName, self.cl_lastConnection.selfConnectorName, instance)
-			--instance:NKGetPhysics():NKDeactivate()
-			return -- end
-		end
-	end
-end
-
 local placementHook = CL_PlacementHook:new("PlacementMode")
 --CL:addHook("SurvivalPlacementInput:ProcessObjectGhost",placementHook)
 CL:addHook("SurvivalPlacementInput:GhostHitObject",placementHook,"GhostHitObject")
-CL:addHook("SurvivalPlacementInput:PrimaryAction_postPlace",placementHook,"PrimaryAction_postPlace")
 CL:addHook("SurvivalPlacementInput:TogglePlacementMode2",placementHook,"TogglePlacementMode2")

@@ -97,8 +97,13 @@ function ConnectorInterface:reconnect(other)
 							CL.println(other:NKGetName().." reconnecting "..self:NKGetName())
 							self:connect(selfConnectorID, otherConnectorID, other)
 							other:connect(otherConnectorID, selfConnectorID, self)
-							self:NKGetPhysics():NKDeactivate()
-							other:NKGetPhysics():NKDeactivate()
+							
+							if self:NKGetPhysics() and self:NKIsPhysicsDynamic() then
+								self:NKGetPhysics():NKDeactivate()
+							end
+							if other:NKGetPhysics() and other:NKIsPhysicsDynamic() then
+								other:NKGetPhysics():NKDeactivate()
+							end
 						end
 						
 					end
