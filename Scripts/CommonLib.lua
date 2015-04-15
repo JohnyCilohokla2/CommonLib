@@ -31,6 +31,8 @@ function CommonLib:Initialize()
 	Eternus.GameState:RegisterSlashCommand("Args", self, "Args")
 	Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
 	
+	Eternus.GameState:RegisterSlashCommand("ApplyBuff", self, "ApplyBuff")
+	
 	--Eternus.GameState:RegisterSlashCommand("tx", self, "TX")
 	
 	--Eternus.World:NKGetKeybinds():NKRegisterDirectCommand("N", self, "TX", KEY_ONCE)
@@ -44,6 +46,45 @@ function CommonLib:Initialize()
 	CL:RegisterCrafting(Eternus.CraftingSystem)
 	
 	
+end
+
+include("Scripts/Buffs/EnergyBuff.lua")
+include("Scripts/Buffs/FireDebuff.lua")
+include("Scripts/Buffs/FrozenDebuff.lua")
+include("Scripts/Buffs/PoisonBombBuff.lua")
+include("Scripts/Buffs/RunSpeedBuff.lua")
+include("Scripts/Buffs/RunSpeedSwordBuff.lua")
+
+function CommonLib:ApplyBuff(args)
+	if args[1] then --Have a name.
+		local buffName = args[1]
+		
+		if EternusEngine.BuffManager.m_buffs[buffName] then
+			local value = -1
+			if args[2] then
+				value = tonumber(args[2])
+			end
+			if value or value >= 0 then
+				local duration = -1
+				if args[3] then
+					duration = tonumber(args[3])
+				end
+				if duration or duration >= 0 then
+					local newBuff = EternusEngine.BuffManager:CreateBuff(buffName, {duration = duration, value = value, stacks = false})
+					Eternus.GameState.player:ApplyBuff(newBuff)
+					Eternus.CommandService:NKAddLocalText("Applying buff " .. buffName .. "!\n")
+				else
+					Eternus.CommandService:NKAddLocalText("Invalid duration!\n")
+				end
+			else
+				Eternus.CommandService:NKAddLocalText("Invalid value!\n")
+			end
+		else
+			Eternus.CommandService:NKAddLocalText("" .. buffName .. " doesn't exist!\n")
+		end
+	end
+	Eternus.CommandService:NKAddLocalText("Syntax: /buff [name] [value] [duration]\n")
+	return true
 end
 
 -------------------------------------------------------------------------------
