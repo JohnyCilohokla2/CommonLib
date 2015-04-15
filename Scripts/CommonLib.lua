@@ -83,7 +83,7 @@ function CommonLib:ApplyBuff(args)
 			Eternus.CommandService:NKAddLocalText("" .. buffName .. " doesn't exist!\n")
 		end
 	end
-	Eternus.CommandService:NKAddLocalText("Syntax: /buff [name] [value] [duration]\n")
+	Eternus.CommandService:NKAddLocalText("Syntax: /ApplyBuff [name] [value] [duration]\n")
 	return true
 end
 
