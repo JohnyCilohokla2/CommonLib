@@ -32,3 +32,23 @@ function CL:RegisterCrafting(craftingSystem)
 		end
 	end
 end
+
+function CL:SavePlayerData(player, outData)
+	for modID, mod in pairs(CL.mods) do
+		if mod.instance then
+			if mod.instance.SavePlayerData then
+				mod.instance:SavePlayerData(player, outData)
+			end
+		end
+	end
+end
+
+function CL:RestorePlayerData(player, inData, version)
+	for modID, mod in pairs(CL.mods) do
+		if mod.instance then
+			if mod.instance.RestorePlayerData then
+				mod.instance:RestorePlayerData(player, inData, version)
+			end
+		end
+	end
+end
