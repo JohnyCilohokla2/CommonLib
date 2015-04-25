@@ -28,8 +28,9 @@ function CommonLib:Initialize()
 	CL.println("CommonLib:Initialize")
 
 	Eternus.GameState:RegisterSlashCommand("CommonLib", self, "Info")
+	Eternus.GameState:RegisterSlashCommand("JSONTest", self, "JSONTest")
 	Eternus.GameState:RegisterSlashCommand("Args", self, "Args")
-	Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
+	--Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
 	
 	Eternus.GameState:RegisterSlashCommand("ApplyBuff", self, "ApplyBuff")
 	
@@ -172,15 +173,23 @@ function CommonLib:Process(dt)
 	]]
 end
 
-function CommonLib:Render()
-end
-
-function CommonLib:Render()
-end
-
-
 function CommonLib:Info(args)
 	CL.println("CommonLib:Info")
+end
+
+function CommonLib:JSONTest(args)
+	CL.println("CommonLib:JSONTest")
+	local tbl = {
+	  animals = { "dog", "cat", "aardvark" },
+	  instruments = { "violin", "trombone", "theremin" },
+	  bugs = CL.json.null,
+	  trees = nil
+	}
+	local str = CL.jsonEncode(tbl);
+	local tbl2 = CL.jsonDecode(str);
+	NKWarn("tbl: " .. EternusEngine.Debugging.Inspect(tbl) .. "\n")
+	NKWarn("str: " .. str .. "\n")
+	NKWarn("tbl2: " .. EternusEngine.Debugging.Inspect(tbl2) .. "\n")
 end
 
 function CommonLib:Heal(args)
@@ -204,6 +213,26 @@ end
 	CL.println("CommonLib:TX")
 	Eternus.GameState:ToggleCustomInventory( Eternus.GameState.m_survivalUI.m_backpackView2 )
 end]]
+
+function CommonLib:SavePlayerData(player, outData)
+	outData.cl = {}
+	outData.cl.test = {}
+	outData.cl.test.test = {}
+	outData.cl.test.test.test = {}
+	outData.cl.test.test.test.test = {}
+	outData.cl.test.test.test.test.test = {}
+	outData.cl.test.test.test.test.test.test = {}
+	outData.cl.test.test.test.test.test.test.test = {}
+	outData.cl.test.test.test.test.test.test.test.test = {}
+	outData.cl.test.test.test.test.test.test.test.test.test = { testing = 666}
+end
+
+function CommonLib:RestorePlayerData(player, inData, version)
+	if inData == nil then
+		return
+	end
+	NKWarn("PoIMod: Restoring word foo: " .. EternusEngine.Debugging.Inspect(inData.cl))
+end
 
 CL.println(" [EntityFramework] CommonLib")
 EntityFramework:RegisterModScript(CommonLib)
