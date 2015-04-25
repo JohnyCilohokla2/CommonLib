@@ -48,13 +48,13 @@ function CL.isQuat(value)
 	return (getmetatable(value)==CL.quatMeta)
 end
 
-CL.json = require ("Libs.dkjson")
+CL.json = require("Libs.dkjson")
 CL.IDS = require("Scripts.CL.IDS.IDS")
 CL.inspect = require("Scripts.Utils.inspect")
 
 -- returns string, status(true/false), err
 function CL.jsonEncode(object)
-	return json.encode (object, { indent = true })
+	return CL.json.encode (object, { indent = true })
 end
 
 -- returns obj, pos, err
