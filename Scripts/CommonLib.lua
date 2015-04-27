@@ -30,6 +30,7 @@ function CommonLib:Initialize()
 	Eternus.GameState:RegisterSlashCommand("CommonLib", self, "Info")
 	Eternus.GameState:RegisterSlashCommand("JSONTest", self, "JSONTest")
 	Eternus.GameState:RegisterSlashCommand("Args", self, "Args")
+    Eternus.GameState:RegisterSlashCommand("LuaStrict", self, "LuaStrict")
 	--Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
 	
 	Eternus.GameState:RegisterSlashCommand("ApplyBuff", self, "ApplyBuff")
@@ -86,6 +87,15 @@ function CommonLib:ApplyBuff(args)
 	end
 	Eternus.CommandService:NKAddLocalText("Syntax: /ApplyBuff [name] [value] [duration]\n")
 	return true
+end
+
+-------------------------------------------------------------------------------
+-- Enables Strict Lua warnings
+function CommonLib:LuaStrict( args )
+    EnableLuaDebugLibrary = 0
+    require("Libs/strict")
+    -- todo: Create a hook so mods can ignore globals when actually needed
+    -- Globals( "Ball" ) 
 end
 
 -------------------------------------------------------------------------------
