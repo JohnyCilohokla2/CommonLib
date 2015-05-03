@@ -11,7 +11,7 @@ function __nativedelegate( nativeClass, attachKey )
 					-- If you get an error here, it means you tried to call a non existant native function.
 					return nativeClass[k](self[attachKey], select(1, ...))
 				end
-				cache[k] = memozied
+				cache[k] = memoized
 			end
 			return memoized
 		end
