@@ -51,7 +51,7 @@
 --------------------------------------------------------------
 
 local bAssert = false					--if false, print violations and save for later retreval with PrintStrictLuaErrors()
-local bPrintUniqueErrorsOnly = false		--print each violation once only
+local bPrintUniqueErrorsOnly = true		--print each violation once only
 local bTestMainBody = false				--see details above
 
 --the next two matter only if bTestMainBody = true:
