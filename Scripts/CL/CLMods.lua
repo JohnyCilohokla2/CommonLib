@@ -33,6 +33,16 @@ function CL:RegisterCrafting(craftingSystem)
 	end
 end
 
+function CL:LocalPlayerReady(player)
+	for modID, mod in pairs(CL.mods) do
+		if mod.instance then
+			if mod.instance.LocalPlayerReady then
+				mod.instance:LocalPlayerReady(player)
+			end
+		end
+	end
+end
+
 function CL:SavePlayerData(player, outData)
 	for modID, mod in pairs(CL.mods) do
 		if mod.instance then

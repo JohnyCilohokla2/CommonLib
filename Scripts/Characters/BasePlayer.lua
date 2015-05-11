@@ -833,7 +833,7 @@ function BasePlayer:UpdateStepSounds( dt )
 		local soundName = self:GetCurrentStepSound()
 			
 		self:NKGetSound():NKPlay3DSound(soundName, false, vec3.new(0.0, 0.0, 0.0), 15.0, 135.0)
-		self.m_prevStepSound = sound
+		self.m_prevStepSound = soundName
 	end
 end
 

@@ -30,6 +30,7 @@ function CommonLib:Initialize()
 	Eternus.GameState:RegisterSlashCommand("CommonLib", self, "Info")
 	Eternus.GameState:RegisterSlashCommand("JSONTest", self, "JSONTest")
 	Eternus.GameState:RegisterSlashCommand("Args", self, "Args")
+    Eternus.GameState:RegisterSlashCommand("LuaStrict", self, "LuaStrict")
 	--Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
 	
 	Eternus.GameState:RegisterSlashCommand("ApplyBuff", self, "ApplyBuff")
@@ -89,6 +90,15 @@ function CommonLib:ApplyBuff(args)
 end
 
 -------------------------------------------------------------------------------
+-- Enables Strict Lua warnings
+function CommonLib:LuaStrict( args )
+    EnableLuaDebugLibrary = 0
+    require("Libs/strict")
+    -- todo: Create a hook so mods can ignore globals when actually needed
+    -- Globals( "Ball" ) 
+end
+
+-------------------------------------------------------------------------------
 -- Called from C++ when the current game enters 
 function CommonLib:Enter()	
 	CL.println("CommonLib:Enter")
@@ -99,9 +109,10 @@ function CommonLib:Enter()
 	--Eternus.GameState.m_survivalUI.m_backpackView2:Hide()
 	--Eternus.InputSystem:NKHideMouse()
 	--self.m_showInventory2 = false
-	
-	
-	local player = Eternus.GameState:GetLocalPlayer():NKGetInstance()
+end
+
+function CommonLib:LocalPlayerReady(player)	
+	CL.println("CommonLib:LocalPlayerReady")
 	
 	player.m_targetAcquiredSignal:Add(function(hitObj)
 		if hitObj and hitObj:NKGetInstance() then
@@ -153,7 +164,7 @@ function CommonLib:Process(dt)
 		end
 		self.cl_debuggingBox:SetText(out)
 	else
-		self.cl_debuggingBox:SetText("No object selected, lol")
+		self.cl_debuggingBox:SetText("No object selected")
 		self.hitObj = nil
 	end
 	
@@ -216,22 +227,13 @@ end]]
 
 function CommonLib:SavePlayerData(player, outData)
 	outData.cl = {}
-	outData.cl.test = {}
-	outData.cl.test.test = {}
-	outData.cl.test.test.test = {}
-	outData.cl.test.test.test.test = {}
-	outData.cl.test.test.test.test.test = {}
-	outData.cl.test.test.test.test.test.test = {}
-	outData.cl.test.test.test.test.test.test.test = {}
-	outData.cl.test.test.test.test.test.test.test.test = {}
-	outData.cl.test.test.test.test.test.test.test.test.test = { testing = 666}
 end
 
 function CommonLib:RestorePlayerData(player, inData, version)
 	if inData == nil then
 		return
 	end
-	NKWarn("PoIMod: Restoring word foo: " .. EternusEngine.Debugging.Inspect(inData.cl))
+	NKWarn("CommonLib:RestorePlayerData: " .. EternusEngine.Debugging.Inspect(inData.cl))
 end
 
 CL.println(" [EntityFramework] CommonLib")
