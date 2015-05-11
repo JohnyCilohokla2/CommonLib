@@ -210,6 +210,8 @@ function TUGGameMode:Client_LocalPawnReady( conn )
 	self.player = conn:NKGetPawn():NKGetInstance()
 
 	self.player.m_controller = self.player:NKGetCharacterController()
+	
+	CL:LocalPlayerReady(self.player)
 end
 
 function TUGGameMode:Server_EnterWorld( clientConnection )
