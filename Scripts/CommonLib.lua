@@ -146,7 +146,7 @@ function CommonLib:Process(dt)
 	
 	if self.hitObj and self.hitObj:NKGetInstance() then
 		local traceInstance = self.hitObj:NKGetInstance()
-		local out = traceInstance:NKGetDisplayName();
+		local out = traceInstance:GetDisplayName();
 		
 		local traceEquipable = traceInstance:NKGetEquipable()
 		
