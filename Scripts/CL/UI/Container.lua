@@ -1,4 +1,3 @@
-include("Scripts/Core/Common.lua")
 
 local Windows = EternusEngine.UI.Windows 
 -------------------------------------------------------------------------------

@@ -58,7 +58,7 @@ function ConnectorInterface:OnEquip()
 end
 
 function ConnectorInterface:OnPlace()
-	NKPrint("ConnectorInterface:OnPlace()\n")
+	--NKPrint("ConnectorInterface:OnPlace()\n")
 	self:initializeConnections()
 	--self:NKGetPhysics():NKDeactivate()
 end
@@ -79,6 +79,10 @@ function ConnectorInterface:compareVec3(vector1, vector2, delta)
 end
 
 function ConnectorInterface:reconnect(other)
+	if self.m_ghostObject or other.m_ghostObject then
+		return
+	end
+	
 	local selfRot = self:NKGetWorldOrientation();
 	local otherRot = other:NKGetWorldOrientation();
 	
@@ -125,14 +129,14 @@ function ConnectorInterface:canReconnect(selfRot, selfPos, other)
 						local selfConnectionPos = selfPos + selfConnector.pos:mul_quat(selfRot)
 						local otherConnectionPos = otherPos + otherConnector.pos:mul_quat(otherRot)
 						
-						CL.println(other:NKGetName().." trying "..self:NKGetName().." "..selfTypeID)
+						--CL.println(other:NKGetName().." trying "..self:NKGetName().." "..selfTypeID)
 						if (CL.compareVec3(selfConnectionPos,otherConnectionPos)) then
-							CL.println(other:NKGetName().." can connect to "..self:NKGetName())
+							--CL.println(other:NKGetName().." can connect to "..self:NKGetName())
 							return true
-						else
-							CL.println(other:NKGetName().." can't connect to "..self:NKGetName().." ")
-							CL.println(selfConnectionPos:NKToString().." "..otherConnectionPos:NKToString())
-							CL.println((selfConnectionPos-otherConnectionPos):NKLength())
+						--else
+							--CL.println(other:NKGetName().." can't connect to "..self:NKGetName().." ")
+							--CL.println(selfConnectionPos:NKToString().." "..otherConnectionPos:NKToString())
+							--CL.println((selfConnectionPos-otherConnectionPos):NKLength())
 						end
 					end
 				end
@@ -147,13 +151,11 @@ function ConnectorInterface:initializeConnector()
 end
 
 function ConnectorInterface:initializeConnections()
-	CL.println(self:NKGetName().." ConnectorInterface:initializeConnections()")	
 	Eternus.EventSystem:NKBroadcastEventInRadius("Event_SeekingConnection", self:NKGetPosition(), 10.0, self)	
 end
 
-function ConnectorInterface:Event_SeekingConnection(object)
-	CL.println(object:NKGetName().." Event_SeekingConnection()"..self:NKGetName())
-	self:reconnect(object:NKGetInstance())
+function ConnectorInterface:Event_SeekingConnection(source)
+	self:reconnect(source)
 end
 
 function ConnectorInterface:setupConnection()
@@ -169,7 +171,6 @@ function ConnectorInterface:setupConnector()
 	if (not self.cl_connectorInitialized) then
 		self.cl_connections = {}
 		self:initializeConnector()
-		CL.println("setupConnector()");
 	end
 	self.cl_connectorInitialized = true
 end
@@ -192,14 +193,14 @@ end
 function ConnectorInterface:disconnect(slot)
 	self:setupConnector()
 	self.cl_connections[slot] = nil
-	CL.println("Disconnecting "..slot);
+	--CL.println("Disconnecting "..slot);
 end
 
 function ConnectorInterface:disconnectAll()
 	self:setupConnector()
 	for connectionID, connectionData in pairs(self.cl_connections) do 
 		ConnectorInterface.disconnect(connectionData.object, connectionData.to)
-		CL.println("Disconnecting "..connectionData.from.."(self)");
+		--CL.println("Disconnecting "..connectionData.from.."(self)");
 	end
 	self.cl_connections = {}
 end

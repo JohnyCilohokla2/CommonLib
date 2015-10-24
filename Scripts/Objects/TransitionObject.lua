@@ -1,4 +1,3 @@
-include("Scripts/Core/Common.lua")
 include("Scripts/Objects/PlaceableObject.lua")
 
 if (TransitionObject == nil) then
@@ -45,20 +44,13 @@ function TransitionObject:ConvertToNewObject()
 	newObj:NKSetPosition(self:NKGetWorldPosition()+vec3(0,0.3,0), false)
 	local newObjPhysics = newObj:NKGetPhysics()
 	if (newObjPhysics ~= nil) then
-		newObjPhysics:NKActivate()
-		newObjPhysics:NKEnableCollisions()
-		newObjPhysics:NKEnable()
+		newObjPhysics:NKSetMotionType(PhysicsComponent.DYNAMIC)
+		newObjPhysics:NKEnableSimulation()
 	end
 	newObj:NKPlaceInWorld(true, false)
 	
-	local newObjInstance = newObj:NKGetInstance()
-	if (newObjInstance ~= nil) then
-		if (newObjInstance.OnConstruct ~= nil) then
-			newObjInstance:OnConstruct()
-		end
-		if (newObjInstance.OnPlace ~= nil) then
-			newObjInstance:OnPlace()
-		end
+	if (newObj.OnPlace ~= nil) then
+		newObj:OnPlace()
 	end
 	self:NKRemoveFromWorld(true, true, true)
 end

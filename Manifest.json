@@ -1,0 +1,43 @@
+{
+    "Name": "CommonLib",
+    "Version":
+    {
+		"Major": 0,
+		"Minor": 1,
+		"Revision": 24
+    },
+    "Summary": "CommonLib mod by JohnyCilohokla and Sigil",
+    "Description": "CommonLib mod by JohnyCilohokla and Sigil",
+	"TargetGame": {
+		"Name": "TUG",
+		"Version": {
+			"Major": 0,
+			"Minor": 0,
+			"Revision": 0
+		}
+	},
+	"Authors":
+	[
+		{
+			"GitUsername": "JohnyCilohokla",
+			"NkUsername": "JohnyCilohokla",
+			"Email": ""
+		},
+		{
+			"NkUsername": "Sigil",
+			"Email": ""
+		}
+	],
+	"Script":
+	{
+		"File": "Scripts/CommonLib.lua",
+		"Class": "CommonLib"
+	},
+	"Categories":
+	[
+		"Generation",
+		"Library",
+		"Miscellaneous",
+		"Utility"
+	]
+}

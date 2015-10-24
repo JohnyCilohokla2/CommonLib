@@ -7,11 +7,12 @@ function strEndsWith(String,endString)
 end
 
 function CL.println(...)
-	NKPrint("[CL] ")
+	local out = ""
+	out = out .. ("[CL] ")
 	for _,v in ipairs(arg) do
-		NKPrint(v .. " ")
+		out = out .. (v .. " ")
 	end
-	NKPrint("\n")
+	NKPrint(out)
 end
 
 CL.out = CL.println
@@ -39,7 +40,7 @@ function CL.isVec3(value)
 	return (getmetatable(value)==CL.vec3Meta)
 end
 
-CL.quatMeta = getmetatable(vec3(1))
+CL.quatMeta = getmetatable(quat(1,0,0,0))
 
 function CL.isQuat(value)
 	if not value then
@@ -48,16 +49,6 @@ function CL.isQuat(value)
 	return (getmetatable(value)==CL.quatMeta)
 end
 
-CL.json = require("Libs.dkjson")
-CL.IDS = require("Scripts.CL.IDS.IDS")
 CL.inspect = require("Scripts.Utils.inspect")
 
--- returns string, status(true/false), err
-function CL.jsonEncode(object)
-	return CL.json.encode (object, { indent = true })
-end
-
--- returns obj, pos, err
-function CL.jsonDecode(str)
-	return CL.json.decode (str, 1, nil)
-end
+JSON = require("Scripts.Libs.JSON")

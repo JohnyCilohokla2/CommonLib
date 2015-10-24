@@ -1,4 +1,3 @@
-include("Scripts/Core/Common.lua")
 include("Scripts/CL/UI/Container.lua")
 
 -------------------------------------------------------------------------------

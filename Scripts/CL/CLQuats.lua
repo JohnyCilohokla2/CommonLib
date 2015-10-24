@@ -3,7 +3,7 @@ if CL == nil then
 end
 
 if (CL.dir == nil) then
-	CL.println("Common Lib - Initizing Quats")
+	CL.println("Common Lib - Initializing Quats")
 	CL.dir = {};
 	
 	CL.dir.YPos = quat.new(0.707107,0.707107,0,0);

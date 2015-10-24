@@ -1,0 +1,7 @@
+CommonLib Keybinds
+	{
+		CommonLib
+		{
+			R = "CL Toggle Placement Mode"
+		}
+	}
