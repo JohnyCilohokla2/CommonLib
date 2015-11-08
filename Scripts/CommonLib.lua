@@ -36,6 +36,10 @@ end
 
  -------------------------------------------------------------------------------
 function CommonLib:Initialize()
+	if Eternus.IsServer then
+		Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
+	end
+	
 	if Eternus.IsClient then
 		include("Scripts/CL/UI/DebuggingBox.lua")
 		CEGUI.SchemeManager:getSingleton():createFromFile("CL.scheme")
@@ -43,10 +47,6 @@ function CommonLib:Initialize()
 		Eternus.GameState:RegisterSlashCommand("CommonLib", self, "Info")
 		Eternus.GameState:RegisterSlashCommand("JSONTest", self, "JSONTest")
 		Eternus.GameState:RegisterSlashCommand("ApplyBuff", self, "ApplyBuff")
-		
-		if Eternus.IsServer then
-			Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
-		end
 		
 		self.cl_debuggingBox = CL_DebuggingBox.new("SurvivalLayout.layout")
 		self.cl_debuggingBox:SetSize(0.2, 0.2)
@@ -172,7 +172,7 @@ function CommonLib:Process(dt)
 		end
 		
 		if self.hitObj then
-			out = out .. self.hitObj:NKGetDisplayName()
+			out = out .. self.hitObj:GetDisplayName()
 			
 			
 			if (self.hitObj.GetMaxStackCount and self.hitObj:GetMaxStackCount() > 1) then
