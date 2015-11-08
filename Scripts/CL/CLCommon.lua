@@ -51,4 +51,4 @@ end
 
 CL.inspect = require("Scripts.Utils.inspect")
 
-JSON = require("Scripts.Libs.JSON")
+CLConfig = require("Scripts.CL.CLConfig")
