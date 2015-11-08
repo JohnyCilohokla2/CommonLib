@@ -3,5 +3,6 @@ CommonLib Keybinds
 		CommonLib
 		{
 			R = "CL Toggle Placement Mode"
+			] = "CL Debugging Box"
 		}
 	}

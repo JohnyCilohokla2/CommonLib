@@ -12,6 +12,21 @@ function CommonLib:Constructor( )
 	
 	self.hitObj = nil
 	self.m_connectorCallback = include("Scripts/Callbacks/ConnectorSystem.lua").new()
+	
+	self.m_configFile = CLConfig.new(self, "Data/config.json")
+	self.m_configFile:Load()
+	self.m_config = self.m_configFile.m_data
+	
+	local needsUpdate = false
+	if not self.m_config.GUI then
+		self.m_config.GUI = {
+			debuggingBoxVisible = true
+		}
+		needsUpdate = true
+	end
+	if needsUpdate then
+		self.m_configFile:Save()
+	end
 end
 
 function CommonLib:PostLoad( )
@@ -20,7 +35,6 @@ function CommonLib:PostLoad( )
 end
 
  -------------------------------------------------------------------------------
- -- Called once from C++ at engine initialization time
 function CommonLib:Initialize()
 	if Eternus.IsClient then
 		include("Scripts/CL/UI/DebuggingBox.lua")
@@ -28,10 +42,11 @@ function CommonLib:Initialize()
 
 		Eternus.GameState:RegisterSlashCommand("CommonLib", self, "Info")
 		Eternus.GameState:RegisterSlashCommand("JSONTest", self, "JSONTest")
-		Eternus.GameState:RegisterSlashCommand("Args", self, "Args")
-		Eternus.GameState:RegisterSlashCommand("LuaStrict", self, "LuaStrict")
-		Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
 		Eternus.GameState:RegisterSlashCommand("ApplyBuff", self, "ApplyBuff")
+		
+		if Eternus.IsServer then
+			Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
+		end
 		
 		self.cl_debuggingBox = CL_DebuggingBox.new("SurvivalLayout.layout")
 		self.cl_debuggingBox:SetSize(0.2, 0.2)
@@ -40,6 +55,7 @@ function CommonLib:Initialize()
 		
 		self.m_inputContext = InputMappingContext.new("CommonLib")
 		self.m_inputContext:NKRegisterNamedCommand("CL Toggle Placement Mode", self.m_connectorCallback, "TogglePlacementMode", KEY_ONCE)
+		self.m_inputContext:NKRegisterNamedCommand("CL Debugging Box", self, "ToggleDebuggingBox", KEY_ONCE)
 	end
 end
 
@@ -76,16 +92,6 @@ function CommonLib:ApplyBuff(args)
 end
 
 -------------------------------------------------------------------------------
--- Enables Strict Lua warnings
-function CommonLib:LuaStrict( args )
-    EnableLuaDebugLibrary = 0
-    require("Scripts.Libs.strict")
-    -- todo: Create a hook so mods can ignore globals when actually needed
-    -- Globals( "Ball" ) 
-end
-
--------------------------------------------------------------------------------
--- Called from C++ when the current game enters 
 function CommonLib:LocalPlayerReady(player)	
 	CL.println("CommonLib:LocalPlayerReady")
 	
@@ -101,34 +107,72 @@ function CommonLib:LocalPlayerReady(player)
 end
 
 -------------------------------------------------------------------------------
--- Called from C++ when the current game enters 
 function CommonLib:Enter()	
 	NKWarn("CommonLib>> Enter")
 	if Eternus.IsClient then
-		self.cl_debuggingBox:Show()
+		if self.m_config.GUI.debuggingBoxVisible then
+			self.cl_debuggingBox:Show()
+		else
+			self.cl_debuggingBox:Hide()
+		end
 		
 		Eternus.InputSystem:NKPushInputContext(self.m_inputContext)
 	end
 end
 
 -------------------------------------------------------------------------------
--- Called from C++ when the game leaves it current mode
 function CommonLib:Leave()
 	NKWarn("CommonLib>> Enter")
 	if Eternus.IsClient then
-		self.cl_debuggingBox:Hide()
+		if self.m_config.GUI.debuggingBoxVisible then
+			self.cl_debuggingBox:Hide()
+		end
 		
 		Eternus.InputSystem:NKRemoveInputContext(self.m_inputContext)
 	end
+	
+	self.m_configFile:Save()
+end
+
+
+local function round(num, idp)
+  if idp and idp>0 then
+    local mult = 10^idp
+    return math.floor(num * mult + 0.5) / mult
+  end
+  return math.floor(num + 0.5)
 end
 
 
 -------------------------------------------------------------------------------
 -- Called from C++ every update tick
 function CommonLib:Process(dt)
-	if Eternus.IsClient then
+	if Eternus.IsClient and self.m_config.GUI.debuggingBoxVisible then
+		local out = ""
+	
+		local wp = Eternus.World:NKGetLocalWorldPlayer()
+		if wp then
+			local biomeWeights = Eternus.BiomeManager:GetBiomeWeightsForPlayer(wp)
+			for key, value in pairs(biomeWeights) do
+				local biome = value.biome
+				local weight = value.weight
+				out = out .. ("Biome: " .. tostring(biome.__classname) .. " " .. tostring(round(weight*100,2)) .. "%\n")
+			end
+		else
+			NKWarn("Couldn't find local world player!")
+		end
+		
+		local wp = Eternus.World:NKGetLocalWorldPlayer()
+		if wp then
+			local pawn = wp:NKGetPawn()
+			if pawn then
+				local playerPosition = pawn:NKGetPosition()
+				out = out .. ("X: " .. tostring(round(playerPosition:x(),2)) .. "\nY: " .. tostring(round(playerPosition:y(),2)) .. "\nZ: " .. tostring(round(playerPosition:z(),2)) .. "\n")
+			end
+		end
+		
 		if self.hitObj then
-			local out = self.hitObj:NKGetDisplayName()
+			out = out .. self.hitObj:NKGetDisplayName()
 			
 			
 			if (self.hitObj.GetMaxStackCount and self.hitObj:GetMaxStackCount() > 1) then
@@ -148,8 +192,8 @@ function CommonLib:Process(dt)
 			end
 			self.cl_debuggingBox:SetText(out)
 		else
-			self.cl_debuggingBox:SetText("No object selected")
-			self.hitObj = nil
+			out = out .. "No object selected"
+			self.cl_debuggingBox:SetText(out)
 		end
 	end
 	
@@ -169,44 +213,35 @@ function CommonLib:Process(dt)
 	]]
 end
 
-function CommonLib:Info(args)
-	CL.println("CommonLib:Info")
+function CommonLib:ToggleDebuggingBox(down)
+	if not down then
+		return
+	end
+	
+	self.m_config.GUI.debuggingBoxVisible = not self.m_config.GUI.debuggingBoxVisible
+	if self.m_config.GUI.debuggingBoxVisible then
+		self.cl_debuggingBox:Show()
+	else
+		self.cl_debuggingBox:Hide()
+	end
 end
 
-function CommonLib:JSONTest(args)
+function CommonLib:Info(userInput, args, commandName, player)
+	CL.println("CommonLib:Info")
+	player:SendChatMessage("CommonLib:Info\n")
+end
 
+function CommonLib:JSONTest(userInput, args, commandName, player)
 	if args[1] then --Have a name.
 		local fileName = args[1]
 		local data = JSON.parseFile(fileName)
 		NKWarn("data: " .. EternusEngine.Debugging.Inspect(data) .. "\n")
 	end
-
-	--[[CL.println("CommonLib:JSONTest")
-	local tbl = {
-	  animals = { "dog", "cat", "aardvark" },
-	  instruments = { "violin", "trombone", "theremin" },
-	  bugs = CL.json.null,
-	  trees = nil
-	}
-	local str = CL.jsonEncode(tbl);
-	local tbl2 = CL.jsonDecode(str);
-	NKWarn("tbl: " .. EternusEngine.Debugging.Inspect(tbl) .. "\n")
-	NKWarn("str: " .. str .. "\n")
-	NKWarn("tbl2: " .. EternusEngine.Debugging.Inspect(tbl2) .. "\n")]]
 end
 
-function CommonLib:Heal(args)
-	local player = Eternus.GameState:GetPlayerInstance()
-	player.m_health = player.m_maxHealth
-	player.m_stamina = player.m_maxStamina
-	player.m_energy = player.m_maxEnergy
-end
-
-function CommonLib:Args(args)
-	local out = ""
-	table.foreach(args, function(k,v) out = out .. "" .. k .. "=" .. v .. ", " end)
-	CL.println("CommonLib:Info")
-	self.cl_debuggingBox:SetText(out)
+function CommonLib:Heal(userInput, args, commandName, player)
+	player:SetHitPoints(100)
+	player:_SetEnergy(100)
 end
 
 EntityFramework:RegisterModScript(CommonLib)
