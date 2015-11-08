@@ -5,10 +5,6 @@ if (TransitionObject == nil) then
 end
 
 function TransitionObject:Constructor( args )
-	self.m_iconGroup = nil
-	if args.iconGroup ~= nil then
-		self.m_iconGroup = args.iconGroup
-	end
 	self.m_active = false
 	self.m_timeLeft = 100
 	self.m_targetName = nil
@@ -16,9 +12,6 @@ end
 
 function TransitionObject:PostLoad()
 	TransitionObject.__super.PostLoad(self)
-	if (self.m_iconGroup==nil) then
-		NKError("Missing Icon Group for TransitionObject "..self:NKGetName().."("..self:NKGetPlaceable():NKGetIconName()..")! Define self.m_iconGroup in the Constructor.")
-	end
 	self.m_icon = nil
 end
 
@@ -38,21 +31,22 @@ function TransitionObject:Update(dt)
 end
 
 function TransitionObject:ConvertToNewObject()
+	NKWarn("ConvertToNewObject: " .. tostring(self.m_targetName))
+	
 	local newObj = Eternus.GameObjectSystem:NKCreateNetworkedGameObject(self.m_targetName, true, true);
 	
 	newObj:NKSetOrientation(self:NKGetWorldOrientation())
 	newObj:NKSetPosition(self:NKGetWorldPosition()+vec3(0,0.3,0), false)
 	local newObjPhysics = newObj:NKGetPhysics()
 	if (newObjPhysics ~= nil) then
-		newObjPhysics:NKSetMotionType(PhysicsComponent.DYNAMIC)
-		newObjPhysics:NKEnableSimulation()
+		newObjPhysics:NKActivate()
 	end
 	newObj:NKPlaceInWorld(true, false)
 	
 	if (newObj.OnPlace ~= nil) then
 		newObj:OnPlace()
 	end
-	self:NKRemoveFromWorld(true, true, true)
+	self:NKDeleteMe()
 end
 
 -------------------------------------------------------------------------------
