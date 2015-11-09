@@ -2,9 +2,9 @@
     "Name": "CommonLib",
     "Version":
     {
-		"Major": 0,
-		"Minor": 1,
-		"Revision": 24
+		"Major": 8,
+		"Minor": 7,
+		"Revision": 0
     },
     "Summary": "CommonLib mod by JohnyCilohokla and Sigil",
     "Description": "CommonLib mod by JohnyCilohokla and Sigil",
@@ -12,8 +12,8 @@
 		"Name": "TUG",
 		"Version": {
 			"Major": 0,
-			"Minor": 0,
-			"Revision": 0
+			"Minor": 8,
+			"Revision": 7
 		}
 	},
 	"Authors":
