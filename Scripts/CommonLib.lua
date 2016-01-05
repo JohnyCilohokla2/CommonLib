@@ -1,5 +1,4 @@
 -- CommonLib
-include("Scripts/CL/CL.lua")
 
 -------------------------------------------------------------------------------
 if CommonLib == nil then
@@ -162,7 +161,6 @@ function CommonLib:Process(dt)
 			NKWarn("Couldn't find local world player!")
 		end
 		
-		local wp = Eternus.World:NKGetLocalWorldPlayer()
 		if wp then
 			local pawn = wp:NKGetPawn()
 			if pawn then
