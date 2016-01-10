@@ -35,6 +35,9 @@ end
 
  -------------------------------------------------------------------------------
 function CommonLib:Initialize()
+	-- Parse archetypes
+	Eternus.CraftingSystem:ParseArchetypesFile("Data/Archetypes/CommonLib.txt")
+	
 	if Eternus.IsServer then
 		Eternus.GameState:RegisterSlashCommand("Heal", self, "Heal")
 	end

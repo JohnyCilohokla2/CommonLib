@@ -1,0 +1,24 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Crafting Archetypes +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Archetypes
+{
+	Shovel
+	{
+		Crude Shovel
+		Bronze Shovel
+	}
+	Hoe
+	{
+		Crude Hoe
+		Bronze Hoe
+	}
+	Sword
+	{
+		Crude Sword
+		Bronze Sword
+	}
+	Anvil
+	{
+		Stone Anvil
+	}
+}
