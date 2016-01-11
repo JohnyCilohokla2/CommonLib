@@ -1,0 +1,38 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Crafting Archetypes +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Archetypes
+{
+	Stone Tool Weapon
+	{
+		Crude Axe
+		Crude Pick
+		Crude Hammer
+		Crude Shovel
+		Crude Hoe
+		Crude Knife
+		Crude Sword
+		Wood Spear
+		Bamboo Spear
+		Spiked Club
+		Spiked Staff
+	}
+	
+	Stone Tool
+	{
+		Crude Axe
+		Crude Pick
+		Crude Hammer
+		Crude Shovel
+		Crude Hoe
+		Crude Knife
+	}
+	
+	Stone Weapon
+	{
+		Crude Sword
+		Wood Spear
+		Bamboo Spear
+		Spiked Club
+		Spiked Staff
+	}
+}

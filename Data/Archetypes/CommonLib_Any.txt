@@ -1,0 +1,80 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Crafting Archetypes +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Archetypes
+{
+	Any Tool Weapon
+	{
+		Crude Axe
+		Crude Pick
+		Crude Hammer
+		Crude Shovel
+		Crude Hoe
+		Crude Knife
+		Crude Sword
+		Wood Spear
+		Bamboo Spear
+		Vine Club
+		Spiked Club
+		Cactus Club
+		Spiked Staff
+		Crude Slingshot
+		Bronze Shovel
+		Bronze Hoe
+		Bronze Axe
+		Bronze Hammer
+		Bronze Pick
+		Bronze Chisel
+		Bronze Spade
+		Bronze Trowel
+		Bronze Knife
+		Bronze Axe Pike
+		Bronze Blunt Pike
+		Bronze Scythe
+		Bronze Spear
+		Bronze Long Javelin
+		Bronze Short Javelin
+		Bronze Hammer Pike
+		Bronze Cudgel
+		Bronze Sword
+	}
+	
+	Any Tool
+	{
+		Crude Axe
+		Crude Pick
+		Crude Hammer
+		Crude Shovel
+		Crude Hoe
+		Crude Knife
+		Bronze Shovel
+		Bronze Hoe
+		Bronze Axe
+		Bronze Hammer
+		Bronze Pick
+		Bronze Chisel
+		Bronze Spade
+		Bronze Trowel
+		Bronze Knife
+	}
+	
+	Any Weapon
+	{
+		Crude Sword
+		Wood Spear
+		Bamboo Spear
+		Vine Club
+		Spiked Club
+		Cactus Club
+		Spiked Staff
+		Crude Slingshot
+		Bronze Axe Pike
+		Bronze Blunt Pike
+		Bronze Scythe
+		Bronze Spear
+		Bronze Long Javelin
+		Bronze Short Javelin
+		Bronze Hammer Pike
+		Bronze Cudgel
+		Bronze Sword
+	}
+}

@@ -1,0 +1,52 @@
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ Crafting Archetypes +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Archetypes
+{
+	Metal Tool Weapon
+	{
+		Bronze Shovel
+		Bronze Hoe
+		Bronze Axe
+		Bronze Hammer
+		Bronze Pick
+		Bronze Chisel
+		Bronze Spade
+		Bronze Trowel
+		Bronze Knife
+		Bronze Axe Pike
+		Bronze Blunt Pike
+		Bronze Scythe
+		Bronze Spear
+		Bronze Long Javelin
+		Bronze Short Javelin
+		Bronze Hammer Pike
+		Bronze Cudgel
+		Bronze Sword
+	}
+	
+	Metal Tool
+	{
+		Bronze Shovel
+		Bronze Hoe
+		Bronze Axe
+		Bronze Hammer
+		Bronze Pick
+		Bronze Chisel
+		Bronze Spade
+		Bronze Trowel
+		Bronze Knife
+	}
+	
+	Metal Weapon
+	{
+		Bronze Axe Pike
+		Bronze Blunt Pike
+		Bronze Scythe
+		Bronze Spear
+		Bronze Long Javelin
+		Bronze Short Javelin
+		Bronze Hammer Pike
+		Bronze Cudgel
+		Bronze Sword
+	}
+}
